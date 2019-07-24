@@ -1,0 +1,15 @@
+language: python
+python:
+  - "3.5"
+  - "3.6"
+  - "3.7"
+install: pip install tox-travis
+script: tox
+deploy:
+  provider: pypi
+  user: kcd
+  password:
+    secure: Y6INZfbZu6HEhUvkin5HtDAjhHfqSG8VL0Wx+Z0Q1ZpD4iK29EXvGG6ULui1oMSuERglT11lhUVuFIpJSgHeKwf7+3N+naFFOLp3KIEUCJRt38XrODfvSZ3O8Ycf7njTWyQpTFFIaQ92iXYqZmNaPeHLl4NpbJ8YaEFJHPjzpeJr9XdbYCJaBJXTKOG1vsJu1KKaES/nHpAprA68e8JBK3zjWEz31VqwgXDex+bBKJrQLNwZZIRer4w6Y8NUnV+8pU7ge15gcVdkQzyJn6ssT5nufAywF04CQOM4yOIK10TsO+TSoNbcwrwHuGhNtDjhqOlxA2VwwXJKP/XfT+aIkwc2IKU3MkiddlJ0ydedk5oqm//F2fzi80jyK2SgqK3S2D0fQune3farYMN1LegRrGhJHFmakUsur7kfZbBMz8aWVFMhMVglH/U+NF+xAxZZnJY3GIFNL/FWqo4zcjvqEcusesTdaVmPr6+gihUXHlHodEfkG5s6+qK5edNi9W6ubBIBWcBVqyc03ebbTryLOjf/i6yDf342TsB80ANpxX4NVtNjKjAmuKoW3DjHUMevy2mObveCYQ4S4dVrtxfviC3asTdtRWZb8IscFTj38cmQrVQ4+Ls7xQdVrVJRQFpQ/3F2CZpVE8XKzUQj22OerlzVYDTAiKnL60JTUM9Gzzk=
+  on:
+    tags: true
+  skip_existing: true
