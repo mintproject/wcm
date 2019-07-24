@@ -1,6 +1,6 @@
 # WCM - WINGS Component Manager
 
-[![PyPI version](https://badge.fury.io/py/wcm.svg)](https://badge.fury.io/py/wcm)
+[![Build Status](https://travis-ci.org/mintproject/wcm.svg?branch=master)](https://travis-ci.org/mintproject/wcm) [![PyPI version](https://badge.fury.io/py/wcm.svg)](https://badge.fury.io/py/wcm)
 
 ## Installation
 
