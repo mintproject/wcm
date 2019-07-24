@@ -43,7 +43,7 @@ setup(
     description=__doc__,
     long_description=read("README.md"),
     long_description_content_type="text/markdown",
-    license="Apache",
+    license="Apache-2",
     url="https://github.com/mintproject/wcm",
     classifiers=[
         "License :: OSI Approved :: Apache Software License",
