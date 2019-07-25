@@ -6,7 +6,7 @@ from jsonschema import Draft7Validator
 
 schema = {
     "type": "object",
-    "required": ["name", "versionn"],
+    "required": ["name", "version"],
     "properties": {
         "name": {
             "description": "The name of the component.",
