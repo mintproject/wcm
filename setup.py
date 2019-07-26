@@ -4,8 +4,6 @@ import os
 
 from setuptools import find_packages, setup
 
-__version__ = "0.0.2.dev0"
-
 install_requires = [
     "Click>=7.0",
     "PyYAML",
@@ -35,9 +33,14 @@ def find_package_data(dirname):
     return [os.path.relpath(path, dirname) for path in items]
 
 
+version = {}
+with open("src/wcm/__init__.py") as fp:
+    exec(fp.read(), version)
+
+
 setup(
     name="wcm",
-    version=__version__,
+    version=version["__version__"],
     author="Rajiv Mayani",
     author_email="mayani@isi.edu",
     description=__doc__,
