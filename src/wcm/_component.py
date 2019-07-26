@@ -62,7 +62,7 @@ def deploy_component(component_dir, wings_config, debug=False, dry_run=False):
 
         name = spec["name"]
         version = parse_version_info(spec["version"])
-        _id = f"{name}-{version.major}"
+        _id = f"{name}-v{version.major}"
         wings_component = spec["wings"]
 
         check_data_types(wings_component, data)
