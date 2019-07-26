@@ -26,7 +26,6 @@ def cli(verbose):
 
 
 @cli.command(help="Show wcm version.")
-@click.option("--debug/--no-debug", "-d/-nd", default=False)
 def version(debug=False):
     click.echo(f"{Path(sys.argv[0]).name} v{wcm.__version__}")
 
