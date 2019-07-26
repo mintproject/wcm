@@ -68,7 +68,14 @@ license: {license}
 
 
 @cli.command(help="Configure credentials")
-@click.option("--profile", "-p", type=str, default="default", metavar="<profile-name>")
+@click.option(
+    "--profile",
+    "-p",
+    envvar="WCM_PROFILE",
+    type=str,
+    default="default",
+    metavar="<profile-name>",
+)
 def configure(profile="default"):
     server_wings = click.prompt("WINGS Server URL")
     export_wings_url = click.prompt("WINGS Export URL")
@@ -105,12 +112,20 @@ def configure(profile="default"):
 @cli.command(help="Deploy the pacakge to the wcm.")
 @click.option("--debug/--no-debug", "-d/-nd", default=False)
 @click.option("--dry-run", "-n", is_flag=True)
+@click.option(
+    "--profile",
+    "-p",
+    envvar="WCM_PROFILE",
+    type=str,
+    default="default",
+    metavar="<profile-name>",
+)
 @click.argument(
     "component",
     type=click.Path(file_okay=False, dir_okay=True, writable=True, exists=True),
     default=".",
 )
-def publish(component, debug=False, dry_run=False):
+def publish(component, profile="default", debug=False, dry_run=False):
     logging.info("Publishing component")
     _component.deploy_component(
         component,
