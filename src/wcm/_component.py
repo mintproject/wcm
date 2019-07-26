@@ -10,7 +10,7 @@ from shutil import make_archive
 from semver import parse_version_info
 from yaml import load
 
-from wcm import _utils, _schema
+from wcm import _schema, _utils
 
 try:
     from yaml import CLoader as Loader
@@ -37,17 +37,18 @@ def check_data_types(spec, data):
 def create_data_types(spec, component_dir, data):
     for dtype, _file in spec.get("data", {}).items():
         data.new_data_type(dtype, None)
-        # Properties
-        format = _file.get("format", None)
-        metadata_properties = _file.get("metadataProperties", {})
-        if metadata_properties or format:
-            data.add_type_properties(
-                dtype, properties=metadata_properties, format=format
-            )
+        if _file:
+            # Properties
+            format = _file.get("format", None)
+            metadata_properties = _file.get("metadataProperties", {})
+            if metadata_properties or format:
+                data.add_type_properties(
+                    dtype, properties=metadata_properties, format=format
+                )
 
-        # Files
-        for f in _file.get("files", ()):
-            data.upload_data_for_type((component_dir / Path(f)).resolve(), dtype)
+            # Files
+            for f in _file.get("files", ()):
+                data.upload_data_for_type((component_dir / Path(f)).resolve(), dtype)
 
 
 def deploy_component(component_dir, wings_config, debug=False, dry_run=False):
