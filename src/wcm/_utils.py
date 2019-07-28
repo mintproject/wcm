@@ -10,7 +10,7 @@ from contextlib import contextmanager
 from csv import DictReader, Sniffer
 from pathlib import Path
 
-from wcm import wings
+import wings
 
 log = logging.getLogger()
 
@@ -46,10 +46,10 @@ def wings_config(wings_config):
             "server": os.getenv(
                 "WCM_WINGS_SERVER", config[wcm_profile]["serverWings"]
             ).strip("/"),
-            "exportURL": os.getenv(
+            "export_url": os.getenv(
                 "WCM_WINGS_EXPORT_URL", config[wcm_profile]["exportWingsURL"]
             ),
-            "userid": os.getenv("WCM_USER", config[wcm_profile]["userWings"]),
+            "username": os.getenv("WCM_USER", config[wcm_profile]["userWings"]),
             "domain": os.getenv("WCM_DOMAIN", config[wcm_profile]["domainWings"]),
         },
         os.getenv("WCM_PASSWORD", config[wcm_profile]["passwordWings"]),
@@ -65,21 +65,11 @@ def load_module(module_name):
 
 
 @contextmanager
-def cli(cfg, template):
+def cli(cfg):
     config, passwd = wings_config(cfg)
-    data = wings.ManageData(**config)
-    planner = wings.Planner(template=template, **config)
-    with login(data, passwd) as data, login(planner, passwd) as planner:
-        yield data, planner
-
-
-@contextmanager
-def component_cli(cfg):
-    config, passwd = wings_config(cfg)
-    component = wings.ManageComponent(**config)
-    data = wings.ManageData(**config)
-    with login(component, passwd) as component, login(data, passwd) as data:
-        yield component, data
+    wings_instance = wings.init(**config)
+    with login(wings_instance, passwd) as wings_instance:
+        yield wings_instance
 
 
 @contextmanager

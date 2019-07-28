@@ -20,7 +20,7 @@ except ImportError:
 log = logging.getLogger()
 
 
-def check_data_types(spec, data):
+def check_data_types(spec):
     _types = set()
     for _t in spec["inputs"]:
         if not _t["isParam"] and _t["type"] not in _types:
@@ -34,20 +34,20 @@ def check_data_types(spec, data):
                 raise ValueError(f"data-type {dtype} not defined")
 
 
-def create_data_types(spec, component_dir, data):
+def create_data_types(spec, component_dir, wings_instance):
     for dtype, _file in spec.get("data", {}).items():
-        data.new_data_type(dtype, None)
+        wings_instance.data.new_data_type(dtype, None)
         # Properties
         format = _file.get("format", None)
         metadata_properties = _file.get("metadataProperties", {})
         if metadata_properties or format:
-            data.add_type_properties(
+            wings_instance.data.add_type_properties(
                 dtype, properties=metadata_properties, format=format
             )
 
         # Files
         for f in _file.get("files", ()):
-            data.upload_data_for_type((component_dir / Path(f)).resolve(), dtype)
+            wings_instance.data.upload_data_for_type((component_dir / Path(f)).resolve(), dtype)
 
 
 def deploy_component(component_dir, wings_config, debug=False, dry_run=False):
@@ -55,7 +55,7 @@ def deploy_component(component_dir, wings_config, debug=False, dry_run=False):
     if not component_dir.exists():
         raise ValueError("Component directory does not exist.")
 
-    with _utils.component_cli(wings_config) as (component, data):
+    with _utils.cli(wings_config) as wings_instance:
         spec = load((component_dir / "wings-component.yml").open(), Loader=Loader)
         _schema.check_package_spec(spec)
 
@@ -64,14 +64,14 @@ def deploy_component(component_dir, wings_config, debug=False, dry_run=False):
         _id = f"{name}-{version.major}"
         wings_component = spec["wings"]
 
-        check_data_types(wings_component, data)
-        create_data_types(wings_component, component_dir, data)
-        component.new_component_type(wings_component["componentType"], None)
-        component.new_component(_id, wings_component["componentType"])
-        component.save_component(_id, wings_component)
+        check_data_types(wings_component)
+        create_data_types(wings_component, component_dir, wings_instance)
+        wings_instance.component.new_component_type(wings_component["componentType"], None)
+        wings_instance.component.new_component(_id, wings_component["componentType"])
+        wings_instance.component.save_component(_id, wings_component)
         try:
             _c = make_archive("_c", "zip", component_dir / "src")
-            component.upload_component(_c, _id)
+            wings_instance.component.upload_component(_c, _id)
         finally:
             os.remove(_c)
 
