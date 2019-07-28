@@ -10,7 +10,7 @@ from shutil import make_archive
 from semver import parse_version_info
 from yaml import load
 
-from wcm import _utils, _schema
+from wcm import _schema, _utils
 
 try:
     from yaml import CLoader as Loader
@@ -37,17 +37,18 @@ def check_data_types(spec):
 def create_data_types(spec, component_dir, wings_instance):
     for dtype, _file in spec.get("data", {}).items():
         wings_instance.data.new_data_type(dtype, None)
-        # Properties
-        format = _file.get("format", None)
-        metadata_properties = _file.get("metadataProperties", {})
-        if metadata_properties or format:
-            wings_instance.data.add_type_properties(
-                dtype, properties=metadata_properties, format=format
-            )
+        if _file:
+            # Properties
+            format = _file.get("format", None)
+            metadata_properties = _file.get("metadataProperties", {})
+            if metadata_properties or format:
+                wings_instance.data.add_type_properties(
+                    dtype, properties=metadata_properties, format=format
+                )
 
-        # Files
-        for f in _file.get("files", ()):
-            wings_instance.data.upload_data_for_type((component_dir / Path(f)).resolve(), dtype)
+            # Files
+            for f in _file.get("files", ()):
+                wings_instance.data.upload_data_for_type((component_dir / Path(f)).resolve(), dtype)
 
 
 def deploy_component(component_dir, wings_config, debug=False, dry_run=False):
@@ -61,7 +62,7 @@ def deploy_component(component_dir, wings_config, debug=False, dry_run=False):
 
         name = spec["name"]
         version = parse_version_info(spec["version"])
-        _id = f"{name}-{version.major}"
+        _id = f"{name}-v{version.major}"
         wings_component = spec["wings"]
 
         check_data_types(wings_component)
