@@ -4,9 +4,11 @@
 import argparse
 import logging
 import os
+from contextlib import contextmanager
 from pathlib import Path
 from shutil import make_archive
 
+import wings
 from semver import parse_version_info
 from yaml import load
 
@@ -18,6 +20,18 @@ except ImportError:
     from yaml import Loader
 
 log = logging.getLogger()
+
+
+@contextmanager
+def _cli(**kw):
+    i = None
+    try:
+        log.debug("Initializing WINGS API Client")
+        i = wings.init(**kw)
+        yield i
+    finally:
+        if i:
+            i.close()
 
 
 def check_data_types(spec):
@@ -34,29 +48,31 @@ def check_data_types(spec):
                 raise ValueError(f"data-type {dtype} not defined")
 
 
-def create_data_types(spec, component_dir, wings_instance):
+def create_data_types(spec, component_dir, cli):
     for dtype, _file in spec.get("data", {}).items():
-        wings_instance.data.new_data_type(dtype, None)
+        cli.data.new_data_type(dtype, None)
         if _file:
             # Properties
             format = _file.get("format", None)
             metadata_properties = _file.get("metadataProperties", {})
             if metadata_properties or format:
-                wings_instance.data.add_type_properties(
+                cli.data.add_type_properties(
                     dtype, properties=metadata_properties, format=format
                 )
 
             # Files
             for f in _file.get("files", ()):
-                wings_instance.data.upload_data_for_type((component_dir / Path(f)).resolve(), dtype)
+                cli.data.upload_data_for_type(
+                    (component_dir / Path(f)).resolve(), dtype
+                )
 
 
-def deploy_component(component_dir, wings_config, debug=False, dry_run=False):
+def deploy_component(component_dir, profile=None, debug=False, dry_run=False):
     component_dir = Path(component_dir)
     if not component_dir.exists():
         raise ValueError("Component directory does not exist.")
 
-    with _utils.cli(wings_config) as wings_instance:
+    with _cli(profile=profile) as cli:
         spec = load((component_dir / "wings-component.yml").open(), Loader=Loader)
         _schema.check_package_spec(spec)
 
@@ -65,14 +81,25 @@ def deploy_component(component_dir, wings_config, debug=False, dry_run=False):
         _id = f"{name}-v{version.major}"
         wings_component = spec["wings"]
 
+        log.debug("Check component's data-types")
         check_data_types(wings_component)
-        create_data_types(wings_component, component_dir, wings_instance)
-        wings_instance.component.new_component_type(wings_component["componentType"], None)
-        wings_instance.component.new_component(_id, wings_component["componentType"])
-        wings_instance.component.save_component(_id, wings_component)
+
+        log.debug("Create component's data-types")
+        create_data_types(wings_component, component_dir, cli)
+
+        log.debug("Create component's type")
+        cli.component.new_component_type(wings_component["componentType"], None)
+
+        log.debug("Create the component")
+        cli.component.new_component(_id, wings_component["componentType"])
+
+        log.debug("Create component's I/O, Documentation, etc.")
+        cli.component.save_component(_id, wings_component)
+
         try:
             _c = make_archive("_c", "zip", component_dir / "src")
-            wings_instance.component.upload_component(_c, _id)
+            log.debug("Upload component code")
+            cli.component.upload_component(_c, _id)
         finally:
             os.remove(_c)
 
