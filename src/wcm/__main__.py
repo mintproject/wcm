@@ -127,11 +127,6 @@ def configure(profile="default"):
 def publish(component, profile="default", debug=False, dry_run=False):
     logging.info("Publishing component")
     _component.deploy_component(
-        component,
-        Path(
-            os.getenv("WCM_CREDENTIALS_FILE", __DEFAULT_WCM_CREDENTIALS_FILE__)
-        ).expanduser(),
-        debug=debug,
-        dry_run=dry_run,
+        component, profile=profile, debug=debug, dry_run=dry_run
     )
     click.secho(f"Success", fg="green")
