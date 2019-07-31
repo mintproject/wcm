@@ -74,7 +74,11 @@ def deploy_component(component_dir, profile=None, debug=False, dry_run=False):
 
     with _cli(profile=profile) as cli:
         spec = load((component_dir / "wings-component.yml").open(), Loader=Loader)
-        _schema.check_package_spec(spec)
+        try:
+            _schema.check_package_spec(spec)
+        except ValueError as err:
+            log.error(err)
+            exit(1)
 
         name = spec["name"]
         version = parse_version_info(spec["version"])
