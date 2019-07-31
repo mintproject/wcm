@@ -2,6 +2,7 @@
 
 import logging
 import os
+import requests
 
 
 def init_logger():
@@ -11,3 +12,7 @@ def init_logger():
     handler.setFormatter(formatter)
     logger.addHandler(handler)
     logger.setLevel(logging.DEBUG if os.getenv("WINGS_DEBUG", False) else logging.INFO)
+
+
+def get_latest_version():
+    return requests.get("https://pypi.org/pypi/wcm/json").json()["info"]["version"]

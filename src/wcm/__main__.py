@@ -13,6 +13,8 @@ from pathlib import Path
 
 import click
 
+import semver
+
 import wcm
 from wcm import _component, _utils
 
@@ -23,6 +25,15 @@ __DEFAULT_WCM_CREDENTIALS_FILE__ = "~/.wcm/credentials"
 @click.option("--verbose", "-v", default=0, count=True)
 def cli(verbose):
     _utils.init_logger()
+    lv = ".".join(_utils.get_latest_version().split(".")[:3])
+    cv = ".".join(wcm.__version__.split(".")[:3])
+
+    if semver.compare(lv, cv) > 0:
+        click.secho(
+            f"""WARNING: You are using wcm version {wcm.__version__}, however version {lv} is available.
+You should consider upgrading via the 'pip install --upgrade wcm' command.""",
+            fg="yellow",
+        )
 
 
 @cli.command(help="Show wcm version.")
