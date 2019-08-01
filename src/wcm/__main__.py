@@ -67,12 +67,16 @@ description: {description}
 author: {author}
 license: {license}
 """
-
     click.echo(spec)
     if yes or click.confirm("Do you want to continue?"):
-        with Path("wings-component.yml").open("w") as fh:
-            fh.write(spec)
-            click.secho(f"Success", fg="green")
+        try:
+            with Path("wings-component.yml").open("w") as fh:
+                fh.write(spec)
+                click.secho(f"Success", fg="green")
+        except:
+            with Path("wings-component.yaml").open("w") as fh:
+                fh.write(spec)
+                click.secho(f"Success", fg="green")
     else:
         click.secho(f"Aborted!", fg="red")
 

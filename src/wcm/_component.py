@@ -73,7 +73,10 @@ def deploy_component(component_dir, profile=None, debug=False, dry_run=False):
         raise ValueError("Component directory does not exist.")
 
     with _cli(profile=profile) as cli:
-        spec = load((component_dir / "wings-component.yml").open(), Loader=Loader)
+        try:
+            spec = load((component_dir / "wings-component.yml").open(), Loader=Loader)
+        except:
+            spec = load((component_dir / "wings-component.yaml").open(), Loader=Loader)
         try:
             _schema.check_package_spec(spec)
         except ValueError as err:
