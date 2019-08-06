@@ -67,12 +67,12 @@ def create_data_types(spec, component_dir, cli):
                 )
 
 
-def deploy_component(component_dir, profile=None, debug=False, dry_run=False):
+def deploy_component(component_dir, profile=None, creds=None, debug=False, dry_run=False):
     component_dir = Path(component_dir)
     if not component_dir.exists():
         raise ValueError("Component directory does not exist.")
 
-    with _cli(profile=profile) as cli:
+    with _cli(profile=profile, **creds) as cli:
         spec = load((component_dir / "wings-component.yml").open(), Loader=Loader)
         try:
             _schema.check_package_spec(spec)
@@ -104,6 +104,7 @@ def deploy_component(component_dir, profile=None, debug=False, dry_run=False):
             _c = make_archive("_c", "zip", component_dir / "src")
             log.debug("Upload component code")
             cli.component.upload_component(_c, _id)
+            return cli.component.get_component_description(_id)
         finally:
             os.remove(_c)
 
