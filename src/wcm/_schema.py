@@ -42,6 +42,7 @@ schema = {
                 "directory": {"type": "string"},
             },
         },
+        "modelCatalog": {"type": "string"},
     },
     "definitions": {
         "person": {

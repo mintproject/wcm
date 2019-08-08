@@ -67,12 +67,12 @@ def create_data_types(spec, component_dir, cli):
                 )
 
 
-def deploy_component(component_dir, profile=None, creds=None, debug=False, dry_run=False):
+def deploy_component(component_dir, profile=None, creds={}, debug=False, dry_run=False):
     component_dir = Path(component_dir)
     if not component_dir.exists():
         raise ValueError("Component directory does not exist.")
 
-    with _cli(profile=profile, **creds) as cli:
+    with _cli(profile=profile) as cli:
         try:
             spec = load((component_dir / "wings-component.yml").open(), Loader=Loader)
         except:

@@ -16,7 +16,7 @@ import click
 import semver
 
 import wcm
-from wcm import _component, _utils
+from wcm import _component, _utils, _download
 
 __DEFAULT_WCM_CREDENTIALS_FILE__ = "~/.wcm/credentials"
 
@@ -145,3 +145,25 @@ def publish(component, profile="default", debug=False, dry_run=False):
         component, profile=profile, debug=debug, dry_run=dry_run
     )
     click.secho(f"Success", fg="green")
+
+
+@cli.command(help="Download a component from wings server. Data stored in .yaml file and source code downloaded to folder within same directory. file-path can be specified to download into a specific directory")
+@click.option(
+    "--profile",
+    "-p",
+    envvar="WCM_PROFILE",
+    type=str,
+    default="default",
+    metavar="<profile-name>",
+)
+@click.option(
+    "--file-path",
+    "-f",
+    type=str,
+    default=None,
+)
+@click.argument("id",default=None,type=str)
+def download(id, profile="default",file_path = None):
+    logging.info("Downloading component")
+    _download.download(id, profile=profile,download_path=file_path)
+    print("done")
