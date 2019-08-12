@@ -189,6 +189,5 @@ def _main():
 if __name__ == "__main__":
     try:
         _main()
-        logger.info("Done")
     except Exception as e:
         logger.exception(e)

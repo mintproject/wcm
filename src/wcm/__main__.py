@@ -16,7 +16,7 @@ import click
 import semver
 
 import wcm
-from wcm import _component, _utils, _download
+from wcm import _component, _utils, _download, _list
 
 __DEFAULT_WCM_CREDENTIALS_FILE__ = "~/.wcm/credentials"
 
@@ -167,3 +167,16 @@ def download(id, profile="default",file_path = None):
     logging.info("Downloading component")
     _download.download(id, profile=profile,download_path=file_path)
     print("done")
+
+
+@cli.command(help="Lists all the components in the current wings instance")
+@click.option(
+    "--profile",
+    "-p",
+    envvar="WCM_PROFILE",
+    type=str,
+    default="default",
+    metavar="<profile-name>",
+)
+def list(profile="default"):
+    _list.list_components()
