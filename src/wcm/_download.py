@@ -41,6 +41,17 @@ def download(component_dir, profile=None, download_path=None):
 
     # Make new folder to put everything in
     path = os.path.join(path, comp_id)
+
+    if os.path.exists(path):
+        print("\"" + path + "\" already exists. Do you want to overwrite it? [y/n]")
+        ans = input()
+        if ans == 'y' or ans == "yes":
+            shutil.rmtree(path)
+        else:
+            print("Quitting")
+            exit(0)
+
+
     os.mkdir(path)
 
     wings_instance.component.download_component(comp_id, os.path.join(path, "components"))
