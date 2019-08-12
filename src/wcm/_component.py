@@ -67,6 +67,19 @@ def create_data_types(spec, component_dir, cli):
                 )
 
 
+def check_if_component_exists(spec):
+    wi = wings.init()
+    name = spec["name"] + "-" + spec["version"]
+    comps = wi.component.get_component_description(name)
+    if not comps is None:
+        print("publishing this will override an existing component. Continue anyway? [y/n]")
+        ans = input()
+        if ans == "n" or ans == "no":
+            print("Canceling publish")
+            exit(0)
+
+
+
 def deploy_component(component_dir, profile=None, creds={}, debug=False, dry_run=False):
     component_dir = Path(component_dir)
     if not component_dir.exists():
@@ -77,15 +90,24 @@ def deploy_component(component_dir, profile=None, creds={}, debug=False, dry_run
             spec = load((component_dir / "wings-component.yml").open(), Loader=Loader)
         except:
             spec = load((component_dir / "wings-component.yaml").open(), Loader=Loader)
+
+        if not spec["name"].islower():
+            log.warning("component name was not lowercase, name will be lowercased before publishing")
+            spec["name"] = (spec["name"]).lower()
+
         try:
             _schema.check_package_spec(spec)
         except ValueError as err:
             log.error(err)
             exit(1)
 
+        check_if_component_exists(spec)
+
         name = spec["name"]
-        version = parse_version_info(spec["version"])
-        _id = f"{name}-v{version.major}"
+        version = spec["version"]
+
+        # _id = f"{name}-v{version}" #removed this line because it would make errors if 'v' was in version name
+        _id = name + "-" + version
         wings_component = spec["wings"]
 
         log.debug("Check component's data-types")

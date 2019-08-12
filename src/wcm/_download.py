@@ -72,7 +72,7 @@ def download(component_dir, profile=None, download_path=None):
 
     # First part becomes name, other becomes version
     yaml_data["name"] = info[0]
-    yaml_data["version"] = info[1] + ".0.0"
+    yaml_data["version"] = info[1]
 
     component.pop("location")
     component.pop("id")
