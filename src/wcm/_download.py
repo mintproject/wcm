@@ -12,18 +12,9 @@ import zipfile
 import shutil
 import sys
 
-'''
-logging
-'''
-logger = logging.getLogger()
-handler = logging.StreamHandler()
-formatter = logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
-handler.setFormatter(formatter)
-logger.addHandler(handler)
-logger.setLevel(logging.INFO)
-
-
 def download(component_dir, profile=None, download_path=None):
+    logger = logging.getLogger()
+
     comp_id = component_dir
 
     # sets path, this determines where the component will be downloaded. Default is the current directory of the program
@@ -77,7 +68,7 @@ def download(component_dir, profile=None, download_path=None):
     # (id example: http://localhost:8080/export/users/mint/api-test/components/library.owl#HAND-1)
     info = component["id"].split("#")
     info = info[len(info) - 1]  # gets the last index of the split (ie: HAND-1)
-    info = info.split("-")  # splits it by the - (ie {"HAND","1"})
+    info = info.split("-")  # splits it by the '-' (ie {"HAND","1"})
 
     # First part becomes name, other becomes version
     yaml_data["name"] = info[0]
