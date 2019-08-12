@@ -11,10 +11,12 @@ import os
 import zipfile
 import shutil
 import sys
+from wcm import _schema, _utils
+
+logger = logging.getLogger()
+
 
 def download(component_dir, profile=None, download_path=None):
-    logger = logging.getLogger()
-
     comp_id = component_dir
 
     # sets path, this determines where the component will be downloaded. Default is the current directory of the program
@@ -41,7 +43,6 @@ def download(component_dir, profile=None, download_path=None):
         else:
             print("Quitting")
             exit(0)
-
 
     os.mkdir(path)
 
@@ -154,3 +155,40 @@ def download(component_dir, profile=None, download_path=None):
     shutil.rmtree(comp_os_path)
 
     logger.info("Download complete")
+
+
+def _main():
+    parser = argparse.ArgumentParser(
+        description="Download wings components given the component id."
+    )
+    parser.add_argument(
+        "--file-path",
+        "-f",
+        type=str,
+        default=None,
+    )
+    parser.add_argument("-c", "--component", required=True, help="Component name to download")
+    parser.add_argument(
+        "-d", "--debug", dest="debug", default=False, action="store_true", help="Debug"
+    )
+    parser.add_argument(
+        "--dry-run", dest="dry_run", default=False, action="store_true", help="Dry run"
+    )
+    args = parser.parse_args()
+
+    if args.debug:
+        os.environ["WINGS_DEBUG"] = "1"
+    _utils.init_logger()
+    component_dir = args.component
+    file_path = args.file_path
+    download(component_dir, file_path)
+
+    print("Done")
+
+
+if __name__ == "__main__":
+    try:
+        _main()
+        logger.info("Done")
+    except Exception as e:
+        logger.exception(e)
