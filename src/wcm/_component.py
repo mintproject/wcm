@@ -70,7 +70,11 @@ def create_data_types(spec, component_dir, cli):
 
 def check_if_component_exists(spec, profile):
     with _cli(profile=profile) as wi:
-        name = spec["name"] + "-" + spec["version"]
+        if spec["version"].isspace() or len(spec["version"]) <= 0:
+            name = spec["name"]
+        else:
+            name = spec["name"] + "-" + spec["version"]
+
         comps = wi.component.get_component_description(name)
         if not comps is None:
             click.echo("publishing this will override an existing component. Continue anyway? [y/n]")
@@ -92,7 +96,7 @@ def deploy_component(component_dir, profile=None, creds={}, debug=False, dry_run
             spec = load((component_dir / "wings-component.yaml").open(), Loader=Loader)
 
         if not spec["name"].islower():
-            log.warning("component name was not lowercase, name will be lowercased before publishing")
+            log.warning("Uppercase characters in name. Component name will be uploaded in all lowercase")
             spec["name"] = (spec["name"]).lower()
 
         try:
@@ -107,7 +111,12 @@ def deploy_component(component_dir, profile=None, creds={}, debug=False, dry_run
         version = spec["version"]
 
         # _id = f"{name}-v{version}" #removed this line because it would make errors if 'v' was in version name
-        _id = name + "-" + version
+        if version.isspace() or len(version) <= 0:
+            log.warning("No version. Component will be uploaded with no version identifier")
+            _id = name
+        else:
+            _id = name + "-" + version
+
         wings_component = spec["wings"]
 
         log.debug("Check component's data-types")
