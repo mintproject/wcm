@@ -30,21 +30,25 @@ def list_components(profile="default"):
             comp_class = ((i["cls"])["component"])["id"]
             comp_class = comp_class.split('#')
 
-            outp += "Class: " + comp_class[-1] + "\n"
+            outp += "[" + comp_class[-1] + "]\n"
 
             length = len(i["children"])
             count = 1
-            outp += "   └────┐\n"
+
+            if length > 0:
+                outp += "  └─┐\n"
+
             for j in i["children"]:
                 comp_id = ((j["cls"])["component"])["id"]
                 comp_id = comp_id.split('#')
 
                 if length == 1 or count == length:
-                    outp += "\t└─ " + comp_id[-1] + "\n"
+                    outp += "    └─ " + comp_id[-1] + "\n"
                 else:
-                    outp += "\t├─ " + comp_id[-1] + "\n"
-
+                    outp += "    ├─ " + comp_id[-1] + "\n"
                 count += 1
+
+            outp += "\n"
 
         click.echo(outp)
 
