@@ -11,6 +11,7 @@ from shutil import make_archive
 import wings
 from semver import parse_version_info
 from yaml import load
+import click
 
 from wcm import _schema, _utils
 
@@ -68,16 +69,15 @@ def create_data_types(spec, component_dir, cli):
 
 
 def check_if_component_exists(spec):
-    wi = wings.init()
-    name = spec["name"] + "-" + spec["version"]
-    comps = wi.component.get_component_description(name)
-    if not comps is None:
-        print("publishing this will override an existing component. Continue anyway? [y/n]")
-        ans = input()
-        if ans == "n" or ans == "no":
-            print("Canceling publish")
-            exit(0)
-
+    with _cli(profile=profile) as cli:
+        name = spec["name"] + "-" + spec["version"]
+        comps = wi.component.get_component_description(name)
+        if not comps is None:
+            click.echo("publishing this will override an existing component. Continue anyway? [y/n]")
+            ans = input()
+            if ans == "n" or ans == "no":
+                log.info("Aborting publish")
+                exit(0)
 
 
 def deploy_component(component_dir, profile=None, creds={}, debug=False, dry_run=False):
@@ -88,7 +88,7 @@ def deploy_component(component_dir, profile=None, creds={}, debug=False, dry_run
     with _cli(profile=profile) as cli:
         try:
             spec = load((component_dir / "wings-component.yml").open(), Loader=Loader)
-        except:
+        except FileNotFoundError:
             spec = load((component_dir / "wings-component.yaml").open(), Loader=Loader)
 
         if not spec["name"].islower():
@@ -132,6 +132,7 @@ def deploy_component(component_dir, profile=None, creds={}, debug=False, dry_run
             return cli.component.get_component_description(_id)
         finally:
             os.remove(_c)
+
 
 
 def _main():
