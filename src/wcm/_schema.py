@@ -31,9 +31,18 @@ schema = {
             },
         },
         "license": {"type": "string"},
-        "author": {"$ref": "#/definitions/person"},
+        "website": {"type": "string"},
+        "dateCreated": {"type": "string"},
+        "author": {"type": "array", "items": {"$ref": "#/definitions/person"}},
         "contributors": {"type": "array", "items": {"$ref": "#/definitions/person"}},
         "maintainers": {"type": "array", "items": {"$ref": "#/definitions/person"}},
+        "publisher": {"$ref": "#/definitions/organization"},
+        "assumptions": {"type": "string"},
+        "citation": {"type": "string"},
+        "memoryRequirements": {"type": "string"},
+        "operatingSystems": {"type": "array", "items": {"type": "string"}},
+        "processorRequirements": {"type": "string"},
+        "softwareRequirements": {"type": "string"},
         "repository": {
             "type": ["object", "string"],
             "properties": {
@@ -42,7 +51,15 @@ schema = {
                 "directory": {"type": "string"},
             },
         },
+        "container": {
+            "type": ["object", "string"],
+            "properties": {
+                "dockerPull": {"type": "string"},
+                "directory": {"type": "string"},
+            },
+        },
         "source": {"type": "string"},
+        "schemaVersion": {"type": "string"},
     },
     "definitions": {
         "person": {
@@ -53,9 +70,18 @@ schema = {
                 "url": {"type": "string", "format": "uri"},
                 "email": {"type": "string", "format": "email"},
             },
-        }
+        },
+        "organization": {
+            "type": ["object", "string"],
+            "required": ["name"],
+            "properties": {
+                "name": {"type": "string"},
+                "url": {"type": "string", "format": "uri"},
+            },
+        },
     },
 }
+#Missing extension for variables of each input and variable of each output
 
 v = Draft7Validator(schema)
 
