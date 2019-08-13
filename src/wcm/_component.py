@@ -68,8 +68,8 @@ def create_data_types(spec, component_dir, cli):
                 )
 
 
-def check_if_component_exists(spec):
-    with _cli(profile=profile) as cli:
+def check_if_component_exists(spec, profile):
+    with _cli(profile=profile) as wi:
         name = spec["name"] + "-" + spec["version"]
         comps = wi.component.get_component_description(name)
         if not comps is None:
@@ -101,7 +101,7 @@ def deploy_component(component_dir, profile=None, creds={}, debug=False, dry_run
             log.error(err)
             exit(1)
 
-        check_if_component_exists(spec)
+        check_if_component_exists(spec, profile)
 
         name = spec["name"]
         version = spec["version"]
