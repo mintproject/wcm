@@ -175,7 +175,6 @@ def download(component_dir, profile=None, download_path=None):
             if os.path.isfile(full_file_name):
                 shutil.copy(full_file_name, os.path.join(path, "src"))
 
-        logger.info("Downloaded source code")
         # remove component folder
         shutil.rmtree(comp_os_path)
 
