@@ -75,7 +75,6 @@ def download(component_dir, profile=None, download_path=None):
         # yaml_data["repository"] = None
 
         yaml_data["wings"] = component
-
         component = yaml_data["wings"]
 
         # takes the id and splits it by the '#' sign
@@ -86,15 +85,23 @@ def download(component_dir, profile=None, download_path=None):
 
         # First part becomes name, other becomes version
         yaml_data["name"] = info[0]
-        yaml_data["version"] = info[1]
+        if len(info) > 1:
+            yaml_data["version"] = info[-1]
+        else:
+            logger.warning("No version could be ascertained from the name")
 
-        component.pop("location")
-        component.pop("id")
-        component.pop("type")
-        component["documentation"] = component["documentation"].strip()
-        component["files"] = ["src\\*"]
+        try:
+            component.pop("location")
+            component.pop("id")
+            component.pop("type")
+            component["documentation"] = component["documentation"].strip()
+            component["files"] = ["src\\*"]
+        except KeyError:
+            logger.warning("Component seems to be missing metadata")
 
         # loops through every input field
+        if len(component["inputs"]) <= 0:
+            logger.warning("Component has no inputs")
         for i in (component["inputs"]):
             files = {}
             i.pop("id")
@@ -112,6 +119,8 @@ def download(component_dir, profile=None, download_path=None):
 
         component["data"] = data_types
 
+        if len(component["outputs"]) <= 0:
+            logger.warning("Component has no outputs")
         for o in (component["outputs"]):
             files = {}
             o.pop("id")
@@ -130,6 +139,8 @@ def download(component_dir, profile=None, download_path=None):
         # makes the YAML file
         stream = open(os.path.join(path, "wings-component.yaml"), 'w+')
         yaml.dump(yaml_data, stream, sort_keys=False)
+
+        logger.info("Generated YAML")
 
         # makes the src folder in the directory
         try:
@@ -153,9 +164,9 @@ def download(component_dir, profile=None, download_path=None):
             zip_path = os.path.join(comp_os_path, comp_id + ".zip")
             with zipfile.ZipFile(zip_path, "r") as zip_ref:
                 zip_ref.extractall(comp_os_path)
-        except:
-            logger.error("something went wrong downloading the code from zip file")
-            logger.error(sys.exc_info())
+        except zipfile.BadZipFile:
+            logger.error("Downloaded zip file seems to be corrupt")
+            exit(1)
 
         # copy files into src folder
         comp_files = os.listdir(os.path.join(comp_os_path, comp_id))
@@ -164,6 +175,7 @@ def download(component_dir, profile=None, download_path=None):
             if os.path.isfile(full_file_name):
                 shutil.copy(full_file_name, os.path.join(path, "src"))
 
+        logger.info("Downloaded source code")
         # remove component folder
         shutil.rmtree(comp_os_path)
 
