@@ -13,10 +13,106 @@
 pip install wcm
 ```
 
+## Example usage
+
+First we want to install wcm
+
+```bash
+C:\Users\Admin>pip install wcm
+```
+
+Now that ive installed wcm I need to configure my credentials to use a wings server
+
+```bash
+C:\Users\Admin>wcm configure
+WINGS Server URL: 
+WINGS Export URL: http://localhost:8080
+WINGS User: myUsername
+WINGS Password:
+WINGS Domain: wings-domain
+Success 
+
+```
+
+Once ive established my credentials I can begin using wcm. First I want to see the components on my current wings instance
+
+```bash
+C:\Users\Admin>wcm list
+[Economic]
+  └─┐
+    ├─ economic-v6
+    ├─ economictest-v5
+    ├─ economicnodata-v6
+    ├─ economic-different-data-v6
+    └─ economicwcmtest 
+                                                                                                                                                                                                                 
+[Hydrological]
+   └─┐                                                                                                                   
+     ├─ HAND-1
+     ├─ hand_final-v1
+     ├─ hand-v1
+     └─ handnodata-v1.0.1 
+
+Done
+```
+
+Next I want to download one of these components. Lets choose economic-v6. First I need to navigate into the directory I want to download the component to. Alternatively I could also use the -f <filepath> argument to specify a filepath for the component to be downloaded to
+
+```bash
+C:\Users\Admin\Desktop\down>ls
+
+C:\Users\Admin\Desktop\down>wcm download economic-v6
+2019-08-13 14:52:02,082 root         INFO     Downloading component
+2019-08-13 14:52:02,226 root         INFO     Generated YAML 
+2019-08-13 14:52:02,256 root         INFO     Download complete
+Download complete  
+
+C:\Users\Admin\Desktop\down>ls
+economic-v6       
+```
+
+When you download a component it comes in three parts. The wings-component.yaml file which stores the components data. The src folder which stores the sorce code. And the data folder, which at the moment is just a placeholder
+
+After I downloaded the economic-v6 component I edited some of the source code and changed the version to v6.1. Now I want to upload it, this is done with the publish command
+
+```bash
+C:\Users\Admin\Desktop\down>ls
+economic-v6.1
+
+C:\Users\Admin\Desktop\down>wcm publish economic-v6.1
+2019-08-13 15:04:08,540 root         INFO     Publishing component
+Success                                                                                                                 
+
+```
+
+Now lets check the list command to make sure it was published
+
+```bash
+C:\Users\Admin\Desktop\down>wcm list
+[Economic]
+  └─┐
+    ├─ economic-v6
+    ├─ economictest-v5
+    ├─ economicnodata-v6
+    ├─ economic-different-data-v6
+    ├─ economicwcmtest
+    └─ economic-v6.1
+
+[Hydrological]
+  └─┐
+    ├─ HAND-1
+    ├─ hand_final-v1
+    ├─ hand-v1
+    └─ handnodata-v1.0.1
+
+Done
+```
+
+And now my economic-v6.1 component has been uploaded to my wings instance
 
 ## CLI
 
-`wcm` WINGS Component Manager is a cli utility to `publish` WINGS component to a WINGS instance.
+`wcm` WINGS Component Manager is a cli utility to `publish` and `download` WINGS component to a WINGS instance.
 
 ```bash
 $ wcm --help
@@ -28,7 +124,9 @@ Options:
 
 Commands:
   configure  Configure credentials
+  download   Download a component from the wings server.
   init       Initialize a directory for a new component.
+  list       Lists all the components in the current wings instance
   publish    Deploy the pacakge to the wcm.
   version    Show wcm version.
 ```
@@ -71,4 +169,29 @@ Options:
   -d, --debug / -nd, --no-debug
   -n, --dry-run
   --help                         Show this message and exit.
+```
+
+The `download` sub command will download a component from the current wings server.
+
+```bash
+$ wcm download --help
+Usage: wcm download [OPTIONS] COMPONENT_ID
+Download a component from wings server. Data stored in .yaml file and source code downloaded to folder within same directory. file-path can be specified to download into a specific directory
+
+Options:
+   -p, --profile <profile-name>
+   -f, --file-path TEXT
+   --help                        Show this message and exit.
+```
+
+The `list` sub command lists all the component's names from the current wings server
+
+```bash
+$ wcm list --help
+Usage: wcm list [OPTIONS]
+Lists all the components in the current wings instance
+
+Options:
+-p, --profile <profile-name>
+--help                        Show this message and exit.
 ```
