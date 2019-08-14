@@ -11,6 +11,7 @@ from shutil import make_archive
 import wings
 from semver import parse_version_info
 from yaml import load
+import click
 
 from wcm import _schema, _utils
 
@@ -67,6 +68,22 @@ def create_data_types(spec, component_dir, cli):
                 )
 
 
+def check_if_component_exists(spec, profile):
+    with _cli(profile=profile) as wi:
+        if spec["version"].isspace() or len(spec["version"]) <= 0:
+            name = spec["name"]
+        else:
+            name = spec["name"] + "-" + spec["version"]
+
+        comps = wi.component.get_component_description(name)
+        if not comps is None:
+            click.echo("publishing this will override an existing component. Continue anyway? [y/n]")
+            ans = input()
+            if ans == "n" or ans == "no":
+                log.info("Aborting publish")
+                exit(0)
+
+
 def deploy_component(component_dir, profile=None, creds={}, debug=False, dry_run=False):
     component_dir = Path(component_dir)
     if not component_dir.exists():
@@ -75,17 +92,31 @@ def deploy_component(component_dir, profile=None, creds={}, debug=False, dry_run
     with _cli(profile=profile) as cli:
         try:
             spec = load((component_dir / "wings-component.yml").open(), Loader=Loader)
-        except:
+        except FileNotFoundError:
             spec = load((component_dir / "wings-component.yaml").open(), Loader=Loader)
+
+        if not spec["name"].islower():
+            log.warning("Uppercase characters in name. Component name will be uploaded in all lowercase")
+            spec["name"] = (spec["name"]).lower()
+
         try:
             _schema.check_package_spec(spec)
         except ValueError as err:
             log.error(err)
             exit(1)
 
+        check_if_component_exists(spec, profile)
+
         name = spec["name"]
-        version = parse_version_info(spec["version"])
-        _id = f"{name}-v{version.major}"
+        version = spec["version"]
+
+        # _id = f"{name}-v{version}" #removed this line because it would make errors if 'v' was in version name
+        if version.isspace() or len(version) <= 0:
+            log.warning("No version. Component will be uploaded with no version identifier")
+            _id = name
+        else:
+            _id = name + "-" + version
+
         wings_component = spec["wings"]
 
         log.debug("Check component's data-types")
@@ -110,6 +141,7 @@ def deploy_component(component_dir, profile=None, creds={}, debug=False, dry_run
             return cli.component.get_component_description(_id)
         finally:
             os.remove(_c)
+
 
 
 def _main():

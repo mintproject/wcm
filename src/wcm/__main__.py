@@ -16,7 +16,7 @@ import click
 import semver
 
 import wcm
-from wcm import _component, _utils, _download
+from wcm import _component, _utils, _download, _list
 
 __DEFAULT_WCM_CREDENTIALS_FILE__ = "~/.wcm/credentials"
 
@@ -144,6 +144,7 @@ def publish(component, profile="default", debug=False, dry_run=False):
     _component.deploy_component(
         component, profile=profile, debug=debug, dry_run=dry_run
     )
+
     click.secho(f"Success", fg="green")
 
 
@@ -162,8 +163,22 @@ def publish(component, profile="default", debug=False, dry_run=False):
     type=str,
     default=None,
 )
-@click.argument("id",default=None,type=str)
-def download(id, profile="default",file_path = None):
+@click.argument("component_id", default=None, type=str)
+def download(component_id, profile="default", file_path=None):
     logging.info("Downloading component")
-    _download.download(id, profile=profile,download_path=file_path)
-    print("done")
+    _download.download(component_id, profile=profile, download_path=file_path)
+    click.secho(f"Download complete", fg="green")
+
+
+@cli.command(help="Lists all the components in the current wings instance")
+@click.option(
+    "--profile",
+    "-p",
+    envvar="WCM_PROFILE",
+    type=str,
+    default="default",
+    metavar="<profile-name>",
+)
+def list(profile="default"):
+    _list.list_components(profile=profile)
+    click.secho(f"Done", fg="green")
