@@ -71,8 +71,8 @@ def create_data_types(spec, component_dir, cli, ignore_data):
                 )
 
 
-def check_if_component_exists(spec, profile):
-    with _cli(profile=profile) as wi:
+def check_if_component_exists(spec, profile, creds):
+    with _cli(profile=profile, **creds) as wi:
         if spec["version"].isspace() or len(spec["version"]) <= 0:
             name = spec["name"]
         else:
@@ -92,7 +92,7 @@ def deploy_component(component_dir, profile=None, creds={}, debug=False, dry_run
     if not component_dir.exists():
         raise ValueError("Component directory does not exist.")
 
-    with _cli(profile=profile) as cli:
+    with _cli(profile=profile, **creds) as cli:
         try:
             spec = load((component_dir / "wings-component.yml").open(), Loader=Loader)
         except FileNotFoundError:
@@ -108,7 +108,7 @@ def deploy_component(component_dir, profile=None, creds={}, debug=False, dry_run
             log.error(err)
             exit(1)
 
-        check_if_component_exists(spec, profile)
+        check_if_component_exists(spec, profile, creds)
 
         name = spec["name"]
         version = spec["version"]
