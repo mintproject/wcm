@@ -136,7 +136,12 @@ def download(component_dir, profile=None, download_path=None):
 
         # makes the YAML file
         stream = open(os.path.join(path, "wings-component.yaml"), 'w+')
-        yaml.dump(yaml_data, stream, sort_keys=False)
+        
+        try:
+            yaml.dump(yaml_data, stream, sort_keys=False)
+        except TypeError:
+            yaml.dump(yaml_data, stream)
+            logger.warning("yaml dumb received type error. Trying again without sort_keys")
 
         logger.info("Generated YAML")
 
