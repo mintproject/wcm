@@ -49,9 +49,12 @@ def check_data_types(spec):
                 raise ValueError(f"data-type {dtype} not defined")
 
 
-def create_data_types(spec, component_dir, cli):
+def create_data_types(spec, component_dir, cli, ignore_data):
     for dtype, _file in spec.get("data", {}).items():
         cli.data.new_data_type(dtype, None)
+        if ignore_data:
+            continue
+
         if _file:
             # Properties
             format = _file.get("format", None)
@@ -84,7 +87,7 @@ def check_if_component_exists(spec, profile):
                 exit(0)
 
 
-def deploy_component(component_dir, profile=None, creds={}, debug=False, dry_run=False):
+def deploy_component(component_dir, profile=None, creds={}, debug=False, dry_run=False, ignore_data=False):
     component_dir = Path(component_dir)
     if not component_dir.exists():
         raise ValueError("Component directory does not exist.")
@@ -117,13 +120,14 @@ def deploy_component(component_dir, profile=None, creds={}, debug=False, dry_run
         else:
             _id = name + "-" + version
 
-        wings_component = spec["wings"]
+        if ignore_data:
+            log.info("Upload data and metadata skipped")
 
+        wings_component = spec["wings"]
         log.debug("Check component's data-types")
         check_data_types(wings_component)
-
         log.debug("Create component's data-types")
-        create_data_types(wings_component, component_dir, cli)
+        create_data_types(wings_component, component_dir, cli, ignore_data)
 
         log.debug("Create component's type")
         cli.component.new_component_type(wings_component["componentType"], None)
