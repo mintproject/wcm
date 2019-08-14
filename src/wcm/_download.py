@@ -73,7 +73,7 @@ def download(component_dir, profile=None, download_path=None):
         # yaml_data["author"] = None
         # yaml_data["container"] = None
         # yaml_data["repository"] = None
-
+        yaml_data["schemaVersion"] = _schema.get_schema_version();
         yaml_data["wings"] = component
         component = yaml_data["wings"]
 
@@ -136,7 +136,7 @@ def download(component_dir, profile=None, download_path=None):
 
         # makes the YAML file
         stream = open(os.path.join(path, "wings-component.yaml"), 'w+')
-        
+
         try:
             yaml.dump(yaml_data, stream, sort_keys=False)
         except TypeError:
@@ -155,7 +155,7 @@ def download(component_dir, profile=None, download_path=None):
 
         try:
             os.mkdir(data_path)
-        except:
+        except FileExistsError:
             logger.warning("data folder already exists")
 
         # unzip components
