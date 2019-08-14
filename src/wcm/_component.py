@@ -41,12 +41,12 @@ def check_data_types(spec):
         if not _t["isParam"] and _t["type"] not in _types:
             dtype = _t["type"][6:]
             if dtype not in spec.get("data", {}):
-                raise ValueError(f"data-type {dtype} not defined")
+                log.warning(f"input data-type \"{dtype}\" not defined")
 
     for _t in spec["outputs"]:
         if not _t["isParam"] and _t["type"] not in _types:
             if dtype not in spec.get("data", {}):
-                raise ValueError(f"data-type {dtype} not defined")
+                log.warning(f"output data-type \"{dtype}\" not defined")
 
 
 def create_data_types(spec, component_dir, cli, ignore_data):
@@ -82,7 +82,7 @@ def check_if_component_exists(spec, profile, force, creds):
         if not comps is None and not force:
             click.echo("publishing this will override an existing component. Continue anyway? [y/n]")
             ans = input()
-            if ans == "n" or ans == "no":
+            if not (ans.lower() == "y" or ans.lower() == "yes"):
                 log.info("Aborting publish")
                 exit(0)
 

@@ -4,6 +4,9 @@ import logging
 
 from jsonschema import Draft7Validator
 
+
+schemaVersion = "0.0.1"
+
 schema = {
     "type": "object",
     "required": ["name", "version"],
@@ -64,7 +67,7 @@ schema = {
             "properties": {
                 "inputs": {"type": "array", "items": {"$ref": "#/definitions/ioData"}},
                 "outputs": {"type": "array", "items": {"$ref": "#/definitions/ioData"}},
-                "rules": {"type": ["string","array"]},
+                "rules": {"type": ["string", "array"]},
                 "inheritedRules": {"type": ["string", "array"]},
                 "documentation": {"type": "string"},
                 "requirement": {"type": "object", "items": {"$ref": "/definitions/requirements"}},
@@ -116,9 +119,17 @@ schema = {
     },
 
 }
-#Missing extension for variables of each input and variable of each output
+# Missing extension for variables of each input and variable of each output
 
 v = Draft7Validator(schema)
+
+
+def get_schema():
+    return schema
+
+
+def get_schema_version():
+    return schemaVersion
 
 
 def _msg(e):

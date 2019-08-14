@@ -51,7 +51,7 @@ def list_components(profile="default"):
 
                 outp += "\n"
             except:
-                 logger.error("Wings error: Maybe, the component is corrupted.")
+                logger.error("Wings error: Maybe, the component is corrupted.")
 
         click.echo(outp)
 
