@@ -51,7 +51,7 @@ def download(component_dir, profile=None, download_path=None):
         if os.path.exists(path):
             click.echo("\"" + path + "\" already exists. Do you want to overwrite it? [y/n]")
             ans = input()
-            if ans == 'y' or ans == "yes":
+            if ans.lower() == 'y' or ans.lower() == "yes":
                 shutil.rmtree(path)
             else:
                 logger.info("Aborting Download")
@@ -111,8 +111,7 @@ def download(component_dir, profile=None, download_path=None):
                     type_name = type_name[len(type_name) - 1]
 
                     i["type"] = "dcdom:" + type_name
-
-                    files["files"] = ["data/placeholder.tif"]
+                    files["files"] = []
                     data_types[type_name] = files
             except:
                 logger.warning("no type in " + str(i))
@@ -130,8 +129,7 @@ def download(component_dir, profile=None, download_path=None):
                     type_name = type_name[len(type_name) - 1]
 
                     o["type"] = "dcdom:" + type_name
-
-                    files["files"] = ["data/placeholder.tif"]
+                    files["files"] = []
                     data_types[type_name] = files
             except:
                 logger.warning("no type in " + str(o))
@@ -154,8 +152,6 @@ def download(component_dir, profile=None, download_path=None):
             os.mkdir(data_path)
         except:
             logger.warning("data folder already exists")
-
-        open(os.path.join(data_path, "placeholder.tif"), 'w+')
 
         # unzip components
         comp_os_path = ""
