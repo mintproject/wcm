@@ -13,7 +13,7 @@ schema = {
             "type": "string",
             "maxLength": 214,
             "minLength": 1,
-            "pattern": "^(?:@[a-z0-9-~][a-z0-9-._~]*/)?[a-z0-9-~][a-z0-9-._~]*$",
+            "pattern": "^(?:@[a-zA-Z0-9-~][a-zA-Z0-9-._~]*/)?[a-zA-Z0-9-~][a-zA-Z0-9-._~]*$",
         },
         "version": {"type": "string"},
         "description": {"type": "string"},

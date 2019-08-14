@@ -71,7 +71,7 @@ def create_data_types(spec, component_dir, cli, ignore_data):
                 )
 
 
-def check_if_component_exists(spec, profile):
+def check_if_component_exists(spec, profile, force):
     with _cli(profile=profile) as wi:
         if spec["version"].isspace() or len(spec["version"]) <= 0:
             name = spec["name"]
@@ -79,7 +79,7 @@ def check_if_component_exists(spec, profile):
             name = spec["name"] + "-" + spec["version"]
 
         comps = wi.component.get_component_description(name)
-        if not comps is None:
+        if not comps is None and not force:
             click.echo("publishing this will override an existing component. Continue anyway? [y/n]")
             ans = input()
             if ans == "n" or ans == "no":
@@ -87,7 +87,7 @@ def check_if_component_exists(spec, profile):
                 exit(0)
 
 
-def deploy_component(component_dir, profile=None, creds={}, debug=False, dry_run=False, ignore_data=False):
+def deploy_component(component_dir, profile=None, creds={}, debug=False, dry_run=False, ignore_data=False, force=False):
     component_dir = Path(component_dir)
     if not component_dir.exists():
         raise ValueError("Component directory does not exist.")
@@ -98,17 +98,13 @@ def deploy_component(component_dir, profile=None, creds={}, debug=False, dry_run
         except FileNotFoundError:
             spec = load((component_dir / "wings-component.yaml").open(), Loader=Loader)
 
-        if not spec["name"].islower():
-            log.warning("Uppercase characters in name. Component name will be uploaded in all lowercase")
-            spec["name"] = (spec["name"]).lower()
-
         try:
             _schema.check_package_spec(spec)
         except ValueError as err:
             log.error(err)
             exit(1)
 
-        check_if_component_exists(spec, profile)
+        check_if_component_exists(spec, profile, force)
 
         name = spec["name"]
         version = spec["version"]
