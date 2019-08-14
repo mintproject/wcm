@@ -6,7 +6,7 @@ from setuptools import find_packages, setup
 
 install_requires = [
     "Click>=7.0",
-    "PyYAML",
+    "PyYAML>=5.1.2",
     "yamlordereddictloader",
     "jsonschema>=3.0.0",
     "semver>=2.8.1",

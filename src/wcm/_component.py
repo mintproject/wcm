@@ -71,15 +71,15 @@ def create_data_types(spec, component_dir, cli, ignore_data):
                 )
 
 
-def check_if_component_exists(spec, profile):
-    with _cli(profile=profile) as wi:
+def check_if_component_exists(spec, profile, force, creds):
+    with _cli(profile=profile, **creds) as wi:
         if spec["version"].isspace() or len(spec["version"]) <= 0:
             name = spec["name"]
         else:
             name = spec["name"] + "-" + spec["version"]
 
         comps = wi.component.get_component_description(name)
-        if not comps is None:
+        if not comps is None and not force:
             click.echo("publishing this will override an existing component. Continue anyway? [y/n]")
             ans = input()
             if not (ans.lower() == "y" or ans.lower() == "yes"):
@@ -87,20 +87,16 @@ def check_if_component_exists(spec, profile):
                 exit(0)
 
 
-def deploy_component(component_dir, profile=None, creds={}, debug=False, dry_run=False, ignore_data=False):
+def deploy_component(component_dir, profile=None, creds={}, debug=False, dry_run=False, ignore_data=False, force=False):
     component_dir = Path(component_dir)
     if not component_dir.exists():
         raise ValueError("Component directory does not exist.")
 
-    with _cli(profile=profile) as cli:
+    with _cli(profile=profile, **creds) as cli:
         try:
             spec = load((component_dir / "wings-component.yml").open(), Loader=Loader)
         except FileNotFoundError:
             spec = load((component_dir / "wings-component.yaml").open(), Loader=Loader)
-
-        if not spec["name"].islower():
-            log.warning("Uppercase characters in name. Component name will be uploaded in all lowercase")
-            spec["name"] = (spec["name"]).lower()
 
         try:
             _schema.check_package_spec(spec)
@@ -108,7 +104,7 @@ def deploy_component(component_dir, profile=None, creds={}, debug=False, dry_run
             log.error(err)
             exit(1)
 
-        check_if_component_exists(spec, profile)
+        check_if_component_exists(spec, profile, force, creds)
 
         name = spec["name"]
         version = spec["version"]
