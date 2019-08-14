@@ -31,7 +31,6 @@ schema = {
             },
         },
         "license": {"type": "string"},
-        "website": {"type": "string"},
         "dateCreated": {"type": "string"},
         "author": {"type": "array", "items": {"$ref": "#/definitions/person"}},
         "contributors": {"type": "array", "items": {"$ref": "#/definitions/person"}},
