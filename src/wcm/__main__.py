@@ -73,7 +73,7 @@ license: {license}
             with Path("wings-component.yml").open("w") as fh:
                 fh.write(spec)
                 click.secho(f"Success", fg="green")
-        except:
+        except FileNotFoundError:
             with Path("wings-component.yaml").open("w") as fh:
                 fh.write(spec)
                 click.secho(f"Success", fg="green")
