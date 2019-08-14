@@ -59,7 +59,21 @@ schema = {
         },
         "source": {"type": "string"},
         "schemaVersion": {"type": "string"},
+        "wings": {
+            "type": ["object"],
+            "properties": {
+                "inputs": {"type": "array", "items": {"$ref": "#/definitions/ioData"}},
+                "outputs": {"type": "array", "items": {"$ref": "#/definitions/ioData"}},
+                "rules": {"type": ["string","array"]},
+                "inheritedRules": {"type": ["string", "array"]},
+                "documentation": {"type": "string"},
+                "requirement": {"type": "object", "items": {"$ref": "/definitions/requirements"}},
+                "componentType": {"type": "string"},
+                "files": {"type": "array", "items": {"type": "string"}},
+            },
+        },
     },
+
     "definitions": {
         "person": {
             "type": ["object", "string"],
@@ -68,6 +82,27 @@ schema = {
                 "name": {"type": "string"},
                 "url": {"type": "string", "format": "uri"},
                 "email": {"type": "string", "format": "email"},
+            },
+        },
+        "ioData": {
+            "type": ["object"],
+            "required": ["role", "prefix", "isParam", "type", "dimensionality"],
+            "properties": {
+                "role": {"type": "string"},
+                "prefix": {"type": "string"},
+                "isParam": {"type": "boolean"},
+                "type": {"type": "string"},
+                "dimensionality": {"type": "integer"}
+            },
+        },
+        "requirement": {
+            "type": ["object"],
+            "properties": {
+                "storageGB": {"type": "double"},
+                "memoryGB": {"type": "double"},
+                "need64bit": {"type": "boolean"},
+                "softwareIds": {"type": "array", "items": {"type": "string"}},
+
             },
         },
         "organization": {
@@ -79,6 +114,7 @@ schema = {
             },
         },
     },
+
 }
 #Missing extension for variables of each input and variable of each output
 
