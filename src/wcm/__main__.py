@@ -16,7 +16,7 @@ import click
 import semver
 
 import wcm
-from wcm import _component, _utils, _download, _list
+from wcm import _component, _utils, _download, _list, _makeyaml
 
 __DEFAULT_WCM_CREDENTIALS_FILE__ = "~/.wcm/credentials"
 
@@ -150,7 +150,8 @@ def publish(component, profile="default", debug=False, dry_run=False, ignore_dat
     click.secho(f"Success", fg="green")
 
 
-@cli.command(help="Download a component from wings server. Data stored in .yaml file and source code downloaded to folder within same directory. file-path can be specified to download into a specific directory")
+@cli.command(help="Download a component from wings server. Data stored in .yaml file and source code downloaded to "
+                  "folder within same directory. file-path can be specified to download into a specific directory")
 @click.option(
     "--profile",
     "-p",
@@ -169,7 +170,7 @@ def publish(component, profile="default", debug=False, dry_run=False, ignore_dat
 def download(component_id, profile="default", file_path=None):
     logging.info("Downloading component")
     _download.download(component_id, profile=profile, download_path=file_path)
-    click.secho(f"Download complete", fg="green")
+    click.secho(f"Success", fg="green")
 
 
 @cli.command(help="Lists all the components in the current wings instance")
@@ -183,4 +184,18 @@ def download(component_id, profile="default", file_path=None):
 )
 def list(profile="default"):
     _list.list_components(profile=profile)
+    click.secho(f"Done", fg="green")
+
+
+@cli.command(help="Generates a blank YAML from the schema. Useful for creating a new component from scratch. Optional "
+                  "parameter --file-path <path> to choose which directory the blank YAML should be created in")
+@click.option(
+    "--file-path",
+    "-f",
+    type=str,
+    default=None,
+)
+def make_yaml(file_path=None):
+    logging.info("Generating blank YAML")
+    _makeyaml.make_yaml(download_path=file_path)
     click.secho(f"Done", fg="green")
