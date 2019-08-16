@@ -3,7 +3,6 @@ import concurrent.futures
 import configparser
 from contextlib import contextmanager
 import yaml
-import yamlordereddictloader
 import logging
 import json
 import wings
@@ -136,7 +135,6 @@ def download(component_dir, profile=None, download_path=None):
 
         # makes the YAML file
         stream = open(os.path.join(path, "wings-component.yaml"), 'w+')
-
         yaml.dump(yaml_data, stream, sort_keys=False)
 
         logger.info("Generated YAML")
@@ -154,6 +152,7 @@ def download(component_dir, profile=None, download_path=None):
         except FileExistsError:
             logger.warning("data folder already exists")
 
+        logger.info("Extracting scr")
         # unzip components
         comp_os_path = ""
         try:
