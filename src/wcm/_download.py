@@ -152,7 +152,7 @@ def download(component_dir, profile=None, download_path=None):
         except FileExistsError:
             logger.warning("data folder already exists")
 
-        logger.info("Extracting scr")
+        logger.info("Extracting source code")
         # unzip components
         comp_os_path = ""
         try:
