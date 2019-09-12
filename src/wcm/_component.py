@@ -79,10 +79,12 @@ def check_if_component_exists(spec, profile, force, creds):
             name = spec["name"] + "-" + spec["version"]
 
         comps = wi.component.get_component_description(name)
-        if not comps is None and not force:
-            click.echo("publishing this will override an existing component. Continue anyway? [y/n]")
-            ans = input()
-            if not (ans.lower() == "y" or ans.lower() == "yes"):
+        if comps is not None:
+            log.info("Component already exists on server")
+            if force:
+                log.info("Overwriting existing component")
+            else:
+                log.error("Publishing this component would overwrite the existing one. To force upload use flag -f")
                 log.info("Aborting publish")
                 exit(0)
 
@@ -141,7 +143,6 @@ def deploy_component(component_dir, profile=None, creds={}, debug=False, dry_run
             return cli.component.get_component_description(_id)
         finally:
             os.remove(_c)
-
 
 
 def _main():

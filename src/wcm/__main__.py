@@ -127,7 +127,7 @@ def configure(profile="default"):
 @click.option("--debug/--no-debug", "-d/-nd", default=False)
 @click.option("--dry-run", "-n", is_flag=True)
 @click.option("--ignore-data/--no-ignore-data", "-i/-ni", default=False)
-@click.option("--force", "-f", is_flag=True, help="Replace existing components")
+@click.option("--force", "-f", is_flag=True, help="Force Upload, even if component already exists on the server")
 @click.option(
     "--profile",
     "-p",
@@ -161,15 +161,16 @@ def publish(component, profile="default", debug=False, dry_run=False, ignore_dat
     metavar="<profile-name>",
 )
 @click.option(
-    "--file-path",
-    "-f",
+    "--path",
+    "-p",
     type=str,
     default=None,
 )
+@click.option("--force", "-f", is_flag=True, help="Force Download, even if component already exists in local directory")
 @click.argument("component_id", default=None, type=str)
-def download(component_id, profile="default", file_path=None):
+def download(component_id, profile="default", path=None, force=False):
     logging.info("Downloading component")
-    _download.download(component_id, profile=profile, download_path=file_path)
+    _download.download(component_id, profile=profile, download_path=path, overwrite=force)
     click.secho(f"Success", fg="green")
 
 

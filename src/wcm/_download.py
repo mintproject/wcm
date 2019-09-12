@@ -27,7 +27,7 @@ def _cli(**kw):
             i.close()
 
 
-def download(component_dir, profile=None, download_path=None):
+def download(component_dir, profile=None, download_path=None, overwrite=False):
 
     comp_id = component_dir
 
@@ -47,12 +47,15 @@ def download(component_dir, profile=None, download_path=None):
         # Make new folder to put everything in
         path = os.path.join(path, comp_id)
 
+        # Checks if file already exists
         if os.path.exists(path):
-            click.echo("\"" + path + "\" already exists. Do you want to overwrite it? [y/n]")
-            ans = input()
-            if ans.lower() == 'y' or ans.lower() == "yes":
+            logger.info("\"" + path + "\" already exists")
+            if overwrite:
+                logger.info("Overwriting existing file")
                 shutil.rmtree(path)
             else:
+                logger.error("Downloading this component would overwrite the existing one. "
+                             "To force download use flag -f")
                 logger.info("Aborting Download")
                 exit(0)
 
