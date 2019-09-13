@@ -38,7 +38,7 @@ schema = {
         "author": {"type": "array", "items": {"$ref": "#/definitions/person"}},
         "contributors": {"type": "array", "items": {"$ref": "#/definitions/person"}},
         "maintainers": {"type": "array", "items": {"$ref": "#/definitions/person"}},
-        "publisher": {"$ref": "#/definitions/organization"},
+        "publisher": {"type": "array", "items": {"$ref": "#/definitions/organization"}},
         "assumptions": {"type": "string"},
         "citation": {"type": "string"},
         "memoryRequirements": {"type": "string"},
@@ -70,9 +70,19 @@ schema = {
                 "rules": {"type": ["string", "array"]},
                 "inheritedRules": {"type": ["string", "array"]},
                 "documentation": {"type": "string"},
-                "requirement": {"type": "object", "items": {"$ref": "/definitions/requirements"}},
+                "requirement": {
+                    "type": ["object"],
+                    "properties": {
+                        "storageGB": {"type": "integer"},
+                        "memoryGB": {"type": "integer"},
+                        "need64bit": {"type": "boolean"},
+                        "softwareIds": {"type": "array", "items": {"type": "string"}},
+
+                    },
+                },
                 "componentType": {"type": "string"},
                 "files": {"type": "array", "items": {"type": "string"}},
+                "data": {"type": ["object"]},
             },
         },
     },
@@ -96,16 +106,6 @@ schema = {
                 "isParam": {"type": "boolean"},
                 "type": {"type": "string"},
                 "dimensionality": {"type": "integer"}
-            },
-        },
-        "requirement": {
-            "type": ["object"],
-            "properties": {
-                "storageGB": {"type": "double"},
-                "memoryGB": {"type": "double"},
-                "need64bit": {"type": "boolean"},
-                "softwareIds": {"type": "array", "items": {"type": "string"}},
-
             },
         },
         "organization": {
