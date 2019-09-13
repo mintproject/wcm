@@ -71,8 +71,20 @@ def create_data_types(spec, component_dir, cli, ignore_data):
                 )
 
 
-def check_if_component_exists(spec, profile, force, creds):
-    with _cli(profile=profile, **creds) as wi:
+def overwrite_component_if_exists(spec, profile, overwrite, credentials):
+    """
+    :param spec: Component specification
+    :type spec: dict
+    :param profile: If we are using the cli, User profile with credentials required
+    :type profile: dict
+    :param overwrite: Overwrite component
+    :type overwrite: bool
+    :param credentials: If we are using the API, Credentials required
+    :type credentials: dict
+    :return: Boolean
+    :rtype: bool
+    """
+    with _cli(profile=profile, **credentials) as wi:
         if spec["version"].isspace() or len(spec["version"]) <= 0:
             name = spec["name"]
         else:
@@ -81,15 +93,15 @@ def check_if_component_exists(spec, profile, force, creds):
         comps = wi.component.get_component_description(name)
         if comps is not None:
             log.info("Component already exists on server")
-            if force:
+            if overwrite:
                 log.info("Overwriting existing component")
             else:
                 log.error("Publishing this component would overwrite the existing one. To force upload use flag -f")
                 log.info("Aborting publish")
-                exit(0)
+        return overwrite
 
 
-def deploy_component(component_dir, profile=None, creds={}, debug=False, dry_run=False, ignore_data=False, force=False):
+def deploy_component(component_dir, profile=None, creds={}, debug=False, dry_run=False, ignore_data=False, overwrite=None):
     component_dir = Path(component_dir)
     if not component_dir.exists():
         raise ValueError("Component directory does not exist.")
@@ -106,7 +118,10 @@ def deploy_component(component_dir, profile=None, creds={}, debug=False, dry_run
             log.error(err)
             exit(1)
 
-        check_if_component_exists(spec, profile, force, creds)
+        if not overwrite_component_if_exists(spec, profile, overwrite, creds):
+            log.info("Aborting publish")
+            return
+        log.info("Replacing the component")
 
         name = spec["name"]
         version = spec["version"]
