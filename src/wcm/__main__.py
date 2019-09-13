@@ -127,7 +127,7 @@ def configure(profile="default"):
 @click.option("--debug/--no-debug", "-d/-nd", default=False)
 @click.option("--dry-run", "-n", is_flag=True)
 @click.option("--ignore-data/--no-ignore-data", "-i/-ni", default=False)
-@click.option("--force", "-f", is_flag=True, help="Replace existing components")
+@click.option("--overwrite", "-f", is_flag=False, help="Replace existing components")
 @click.option(
     "--profile",
     "-p",
@@ -141,10 +141,10 @@ def configure(profile="default"):
     type=click.Path(file_okay=False, dir_okay=True, writable=True, exists=True),
     default=".",
 )
-def publish(component, profile="default", debug=False, dry_run=False, ignore_data=False, force=False):
+def publish(component, profile="default", debug=False, dry_run=False, ignore_data=False, overwrite=None):
     logging.info("Publishing component")
     _component.deploy_component(
-        component, profile=profile, debug=debug, dry_run=dry_run, ignore_data=ignore_data, force=force
+        component, profile=profile, debug=debug, dry_run=dry_run, ignore_data=ignore_data, overwrite=overwrite
     )
 
     click.secho(f"Success", fg="green")
