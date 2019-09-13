@@ -97,7 +97,6 @@ def overwrite_component_if_exists(spec, profile, overwrite, credentials):
                 log.info("Overwriting existing component")
             else:
                 log.error("Publishing this component would overwrite the existing one. To force upload use flag -f")
-                log.info("Aborting publish")
         return overwrite
 
 

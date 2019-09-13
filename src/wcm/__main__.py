@@ -127,7 +127,7 @@ def configure(profile="default"):
 @click.option("--debug/--no-debug", "-d/-nd", default=False)
 @click.option("--dry-run", "-n", is_flag=True)
 @click.option("--ignore-data/--no-ignore-data", "-i/-ni", default=False)
-@click.option("--overwrite", "-f", is_flag=False, help="Replace existing components")
+@click.option("--overwrite", "-f", is_flag=True, help="Replace existing components")
 @click.option(
     "--profile",
     "-p",
