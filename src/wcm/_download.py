@@ -51,7 +51,7 @@ def download(component_dir, profile=None, download_path=None):
         if os.path.exists(path):
             click.echo("\"" + path + "\" already exists. Do you want to overwrite it? [y/n]")
             ans = input()
-            if ans == 'y' or ans == "yes":
+            if ans.lower() == 'y' or ans.lower() == "yes":
                 shutil.rmtree(path)
             else:
                 logger.info("Aborting Download")
@@ -73,7 +73,7 @@ def download(component_dir, profile=None, download_path=None):
         # yaml_data["author"] = None
         # yaml_data["container"] = None
         # yaml_data["repository"] = None
-
+        yaml_data["schemaVersion"] = _schema.get_schema_version();
         yaml_data["wings"] = component
         component = yaml_data["wings"]
 
@@ -111,8 +111,7 @@ def download(component_dir, profile=None, download_path=None):
                     type_name = type_name[len(type_name) - 1]
 
                     i["type"] = "dcdom:" + type_name
-
-                    files["files"] = ["data/placeholder.tif"]
+                    files["files"] = []
                     data_types[type_name] = files
             except:
                 logger.warning("no type in " + str(i))
@@ -130,14 +129,14 @@ def download(component_dir, profile=None, download_path=None):
                     type_name = type_name[len(type_name) - 1]
 
                     o["type"] = "dcdom:" + type_name
-
-                    files["files"] = ["data/placeholder.tif"]
+                    files["files"] = []
                     data_types[type_name] = files
             except:
                 logger.warning("no type in " + str(o))
 
         # makes the YAML file
         stream = open(os.path.join(path, "wings-component.yaml"), 'w+')
+
         yaml.dump(yaml_data, stream, sort_keys=False)
 
         logger.info("Generated YAML")
@@ -152,10 +151,8 @@ def download(component_dir, profile=None, download_path=None):
 
         try:
             os.mkdir(data_path)
-        except:
+        except FileExistsError:
             logger.warning("data folder already exists")
-
-        open(os.path.join(data_path, "placeholder.tif"), 'w+')
 
         # unzip components
         comp_os_path = ""

@@ -41,12 +41,12 @@ def check_data_types(spec):
         if not _t["isParam"] and _t["type"] not in _types:
             dtype = _t["type"][6:]
             if dtype not in spec.get("data", {}):
-                raise ValueError(f"data-type {dtype} not defined")
+                log.warning(f"input data-type \"{dtype}\" not defined")
 
     for _t in spec["outputs"]:
         if not _t["isParam"] and _t["type"] not in _types:
             if dtype not in spec.get("data", {}):
-                raise ValueError(f"data-type {dtype} not defined")
+                log.warning(f"output data-type \"{dtype}\" not defined")
 
 
 def create_data_types(spec, component_dir, cli, ignore_data):
