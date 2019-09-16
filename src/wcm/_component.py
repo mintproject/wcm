@@ -117,11 +117,6 @@ def deploy_component(component_dir, profile=None, creds={}, debug=False, dry_run
             log.error(err)
             exit(1)
 
-        if not overwrite_component_if_exists(spec, profile, overwrite, creds):
-            log.info("Aborting publish")
-            return
-        log.info("Replacing the component")
-
         name = spec["name"]
         version = spec["version"]
 
@@ -131,6 +126,11 @@ def deploy_component(component_dir, profile=None, creds={}, debug=False, dry_run
             _id = name
         else:
             _id = name + "-" + version
+
+        if not overwrite_component_if_exists(spec, profile, overwrite, creds):
+            log.info("Aborting publish")
+            return cli.component.get_component_description(_id)
+        log.info("Replacing the component")
 
         if ignore_data:
             log.info("Upload data and metadata skipped")
