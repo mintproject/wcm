@@ -115,3 +115,9 @@ target/
 #----------
 
 ghostdriver.log
+
+#----------------------
+# Downloaded Components
+#----------------------
+cycles-2.0.0
+economic-new-6.0.0

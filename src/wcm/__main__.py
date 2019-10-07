@@ -128,6 +128,7 @@ def configure(profile="default"):
 @click.option("--dry-run", "-n", is_flag=True)
 @click.option("--ignore-data/--no-ignore-data", "-i/-ni", default=False)
 @click.option("--overwrite", "-f", is_flag=True, help="Replace existing components")
+@click.option("--upload-catalog", "-sc", is_flag=True, help="Upload component to software catalog")
 @click.option(
     "--profile",
     "-p",
@@ -141,11 +142,17 @@ def configure(profile="default"):
     type=click.Path(file_okay=False, dir_okay=True, writable=True, exists=True),
     default=".",
 )
-def publish(component, profile="default", debug=False, dry_run=False, ignore_data=False, overwrite=False):
+def publish(component, profile="default", debug=False, dry_run=False, ignore_data=False, overwrite=False, upload_catalog=False):
     logging.info("Publishing component")
-    _component.deploy_component(
-        component, profile=profile, debug=debug, dry_run=dry_run, ignore_data=ignore_data, overwrite=overwrite
-    )
+    if not upload_catalog:
+        _component.deploy_component(
+            component, profile=profile, debug=debug, dry_run=dry_run, ignore_data=ignore_data, overwrite=overwrite
+        )
+    else:
+        logging.info(component)
+        _component.upload_to_software_catalog(
+            component, profile=profile, debug=debug, dry_run=dry_run, ignore_data=ignore_data, overwrite=overwrite, upload_catalog=upload_catalog
+        )
 
     click.secho(f"Success", fg="green")
 

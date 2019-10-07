@@ -161,6 +161,25 @@ def deploy_component(component_dir, profile=None, creds={}, debug=False, dry_run
         finally:
             os.remove(_c)
 
+def upload_to_software_catalog(component_dir, profile=None, creds={}, debug=False, dry_run=False, ignore_data=False, overwrite=None, upload_catalog=True):
+    component_dir = Path(component_dir)
+    if not component_dir.exists():
+        raise ValueError("Component directory does not exist.")
+    
+    with _cli(profile=profile, **creds) as cli:
+        try:
+            spec = load((component_dir / "wings-component.yml").open(), Loader=Loader)
+        except FileNotFoundError:
+            spec = load((component_dir / "wings-component.yaml").open(), Loader=Loader)
+        
+        try:
+            _schema.check_package_spec(spec)
+        except ValueError as err:
+            log.error(err)
+            exit(1)
+        
+        logging.info(spec)
+
 
 def _main():
     parser = argparse.ArgumentParser(
@@ -187,6 +206,7 @@ def _main():
     _utils.init_logger()
 
     deploy_component(**vars(args))
+
 
 
 if __name__ == "__main__":
