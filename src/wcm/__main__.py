@@ -5,7 +5,7 @@ wcm.
 :license: Apache 2.0
 """
 
-import configparser
+
 import logging
 import os
 import sys
@@ -19,6 +19,7 @@ import wcm
 from wcm import _component, _utils, _download, _list, _makeyaml
 
 __DEFAULT_WCM_CREDENTIALS_FILE__ = "~/.wcm/credentials"
+__DEFAULT_MINT_API_CREDENTIALS_FILE__ = "~/.mint_api/credentials"
 
 
 @click.group()
@@ -123,6 +124,42 @@ def configure(profile="default"):
         click.secho(f"Success", fg="green")
 
 
+@cli.command(help="Configure MINT API credentials")
+@click.option(
+    "--profile",
+    "-p",
+    envvar="WCM_PROFILE",
+    type=str,
+    default="default",
+    metavar="<profile-name>",
+)
+def configure_mint_api(profile="default"):
+    api_username = click.prompt("MINT API Username")
+    api_password = click.prompt("MINT API Password", hide_input=True)
+
+    credentials_file = Path(
+        os.getenv("MINT_API_CREDENTIALS_FILE", __DEFAULT_MINT_API_CREDENTIALS_FILE__)
+    ).expanduser()
+    os.makedirs(str(credentials_file.parent), exist_ok=True)
+
+    credentials = configparser.ConfigParser()
+    credentials.optionxform = str
+
+    if credentials_file.exists():
+        credentials.read(credentials_file)
+
+    credentials[profile] = {
+        "api_username": api_username,
+        "api_password": api_password
+    }
+
+    with credentials_file.open("w") as fh:
+        credentials_file.parent.chmod(0o700)
+        credentials_file.chmod(0o600)
+        credentials.write(fh)
+        click.secho(f"Success", fg="green")
+
+
 @cli.command(help="Deploy the pacakge to the wcm.")
 @click.option("--debug/--no-debug", "-d/-nd", default=False)
 @click.option("--dry-run", "-n", is_flag=True)
@@ -137,12 +174,20 @@ def configure(profile="default"):
     default="default",
     metavar="<profile-name>",
 )
+@click.option(
+    "--apiprofile",
+    "-p",
+    envvar="MINT_API_PROFILE",
+    type=str,
+    default="default",
+    metavar="<profile-name>",
+)
 @click.argument(
     "component",
     type=click.Path(file_okay=False, dir_okay=True, writable=True, exists=True),
     default=".",
 )
-def publish(component, profile="default", debug=False, dry_run=False, ignore_data=False, overwrite=False, upload_catalog=False):
+def publish(component, profile="default", apiprofile="default", debug=False, dry_run=False, ignore_data=False, overwrite=False, upload_catalog=False):
     logging.info("Publishing component")
     if not upload_catalog:
         _component.deploy_component(
@@ -151,7 +196,7 @@ def publish(component, profile="default", debug=False, dry_run=False, ignore_dat
     else:
         logging.info(component)
         _component.upload_to_software_catalog(
-            component, profile=profile, debug=debug, dry_run=dry_run, ignore_data=ignore_data, overwrite=overwrite, upload_catalog=upload_catalog
+            component, profile=profile, apiprofile=apiprofile, debug=debug, dry_run=dry_run, ignore_data=ignore_data, overwrite=overwrite, upload_catalog=upload_catalog
         )
 
     click.secho(f"Success", fg="green")

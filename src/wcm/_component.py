@@ -13,6 +13,14 @@ from semver import parse_version_info
 from yaml import load
 import click
 
+import configparser
+import modelcatalog
+from modelcatalog.rest import ApiException
+from pprint import pprint
+import json
+import ast
+
+
 from wcm import _schema, _utils
 
 try:
@@ -21,7 +29,7 @@ except ImportError:
     from yaml import Loader
 
 log = logging.getLogger()
-
+__DEFAULT_MINT_API_CREDENTIALS_FILE__ = "~/.mint_api/credentials"
 
 @contextmanager
 def _cli(**kw):
@@ -161,11 +169,26 @@ def deploy_component(component_dir, profile=None, creds={}, debug=False, dry_run
         finally:
             os.remove(_c)
 
-def upload_to_software_catalog(component_dir, profile=None, creds={}, debug=False, dry_run=False, ignore_data=False, overwrite=None, upload_catalog=True):
+def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, creds={}, debug=False, dry_run=False, ignore_data=False, overwrite=None, upload_catalog=True):
     component_dir = Path(component_dir)
     if not component_dir.exists():
         raise ValueError("Component directory does not exist.")
     
+    logging.info(apiprofile)
+    credentials_file = Path(
+        os.getenv("WCM_CREDENTIALS_FILE", __DEFAULT_MINT_API_CREDENTIALS_FILE__)
+    ).expanduser()
+    
+    credentials = configparser.ConfigParser()
+    credentials.optionxform = str
+
+    if credentials_file.exists():
+        credentials.read(credentials_file)
+    
+    username = credentials[apiprofile]["api_username"]
+    password = credentials[apiprofile]["api_password"]
+
+    model_data = {}
     with _cli(profile=profile, **creds) as cli:
         try:
             spec = load((component_dir / "wings-component.yml").open(), Loader=Loader)
@@ -178,7 +201,207 @@ def upload_to_software_catalog(component_dir, profile=None, creds={}, debug=Fals
             log.error(err)
             exit(1)
         
-        logging.info(spec)
+        model_data = spec
+
+    logging.info(model_data)
+
+    input_param = []
+    output_param = []
+    param = []
+    for element in model_data['wings']['inputs']:
+        if not element['isParam']:
+            element.pop('isParam')
+            element.pop('type')
+            if 'role' in element.keys():
+                element['id'] = element.pop('role')
+            if 'dimensionality' in element.keys():
+                element['hasDimensionality'] = element.pop('dimensionality')
+            if 'prefix' in element.keys():
+                element['hasPrefix'] = element.pop('prefix')
+            if 'testValue' in element.keys():
+                element['hasTestValue'] = element.pop('testValue')
+            input_param.append(element)
+        else:
+            element.pop('isParam')
+            if 'role' in element.keys():
+                element['id'] = element.pop('role')
+            if 'paramDefaultValue' in element.keys():
+                element['hasDefaultValue'] = str(element.pop('paramDefaultValue'))
+            if 'type' in element.keys():
+                element['hasDataType'] = element.pop('type')
+            if 'prefix' in element.keys():
+                element['hasPrefix'] = element.pop('prefix')
+            if 'dimensionality' in element.keys():
+                element['hasDimensionality'] = element.pop('dimensionality')
+            param.append(element)
+    
+    for element in model_data['wings']['outputs']:
+        if not element['isParam']:
+            element.pop('isParam')
+            element.pop('type')
+            if 'role' in element.keys():
+                element['id'] = element.pop('role')
+            if 'dimensionality' in element.keys():
+                element['hasDimensionality'] = element.pop('dimensionality')
+            if 'prefix' in element.keys():
+                element['hasPrefix'] = element.pop('prefix')
+            if 'testValue' in element.keys():
+                element['hasTestValue'] = element.pop('testValue')
+            output_param.append(element)
+        else:
+            element.pop('isParam')
+            if 'role' in element.keys():
+                element['id'] = element.pop('role')
+            if 'paramDefaultValue' in element.keys():
+                element['hasDefaultValue'] = str(element.pop('paramDefaultValue'))
+            if 'type' in element.keys():
+                element['hasDataType'] = element.pop('type')
+            if 'prefix' in element.keys():
+                element['hasPrefix'] = element.pop('prefix')
+            if 'dimensionality' in element.keys():
+                element['hasDimensionality'] = element.pop('dimensionality')
+            param.append(element)
+    
+    configuration = modelcatalog.Configuration()
+    user_api_instance = modelcatalog.DefaultApi()
+
+    # Login the user into the API to get the access token
+    if username and password:
+        try:
+            api_response = user_api_instance.user_login_get(username, password)
+            data = json.dumps(ast.literal_eval(api_response))
+            access_token = json.loads(data)["access_token"]
+            configuration.access_token = access_token
+        except ApiException as e:
+            print("Exception when calling DefaultApi->user_login_get: %s\n" % e)
+    else:
+        log.error("There is some issue while getting the username and password")
+        exit(1)
+
+
+    # Create an instance of DatasetSpecificationApi to register the input and output parameters
+    api_instance = modelcatalog.DatasetSpecificationApi(modelcatalog.ApiClient(configuration))
+    # Add input parameter to DatasetSpecification API
+    for each in input_param:
+        logging.info(each)
+        dataset_specification = modelcatalog.DatasetSpecification()
+
+        if "hasDimensionality" in each:
+            dataset_specification.has_dimensionality = [each["hasDimensionality"]]
+        else:
+            dataset_specification.has_dimensionality = []
+        
+        if "id" in each:
+            dataset_specification.id = each["id"]
+        else:
+            dataset_specification.id = []
+
+        if "has_format" in each:
+            dataset_specification.has_format = each["has_format"]
+        else:
+            dataset_specification.has_format = []
+        
+        if "has_file_structure" in each:
+            dataset_specification.has_file_structure = each["has_file_structure"]
+        else:
+            dataset_specification.has_file_structure = {}
+        
+        if "description" in each:
+            dataset_specification.description = each["description"]
+        else:
+            dataset_specification.description = []
+        
+        if "position" in each:
+            dataset_specification.position = each["position"]
+        else:
+            dataset_specification.position = []
+
+        if "type" in each:
+            dataset_specification.type = each["type"]
+        else:
+            dataset_specification.type = []
+
+        if "role" in each:
+            dataset_specification.label = [each["role"]]
+        else:
+            dataset_specification.label = []
+        
+        if "has_fixed_resource" in each:
+            dataset_specification.has_fixed_resource = each["has_fixed_resource"]
+        else:
+            dataset_specification.has_fixed_resource = []
+        
+        if "has_presentation" in each:
+            dataset_specification.has_presentation = each["has_presentation"]
+        else:
+            dataset_specification.has_presentation = []
+
+        try:
+            api_instance.datasetspecifications_post(dataset_specification=dataset_specification, user=username)
+            pprint("Created Input Dataset Specification")
+        except ApiException as e:
+            pprint("Exception when calling DatasetspecificationApi->create_data_set: %s\n" % e)
+
+    # Add output parameter to DatasetSpecification API
+    for each in output_param:
+        dataset_specification = modelcatalog.DatasetSpecification()
+
+        if "hasDimensionality" in each:
+            dataset_specification.has_dimensionality = [each["hasDimensionality"]]
+        else:
+            dataset_specification.has_dimensionality = []
+        
+        if "id" in each:
+            dataset_specification.id = each["id"]
+        else:
+            dataset_specification.id = []
+
+        if "has_format" in each:
+            dataset_specification.has_format = each["has_format"]
+        else:
+            dataset_specification.has_format = []
+        
+        if "has_file_structure" in each:
+            dataset_specification.has_file_structure = each["has_file_structure"]
+        else:
+            dataset_specification.has_file_structure = {}
+        
+        if "description" in each:
+            dataset_specification.description = each["description"]
+        else:
+            dataset_specification.description = []
+        
+        if "position" in each:
+            dataset_specification.position = each["position"]
+        else:
+            dataset_specification.position = []
+
+        if "type" in each:
+            dataset_specification.type = each["type"]
+        else:
+            dataset_specification.type = []
+
+        if "role" in each:
+            dataset_specification.label = [each["role"]]
+        else:
+            dataset_specification.label = []
+        
+        if "has_fixed_resource" in each:
+            dataset_specification.has_fixed_resource = each["has_fixed_resource"]
+        else:
+            dataset_specification.has_fixed_resource = []
+        
+        if "has_presentation" in each:
+            dataset_specification.has_presentation = each["has_presentation"]
+        else:
+            dataset_specification.has_presentation = []
+        try:
+            api_instance.datasetspecifications_post(dataset_specification=dataset_specification, user=username)
+            pprint("Created Output Dataset Specification")
+        except ApiException as e:
+            pprint("Exception when calling DatasetspecificationApi->create_data_set: %s\n" % e)
+
+    
 
 
 def _main():
