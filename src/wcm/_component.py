@@ -305,7 +305,7 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
             dataset_specification.has_file_structure = each["has_file_structure"]
         else:
             dataset_specification.has_file_structure = {}
-        
+
         if "description" in each:
             dataset_specification.description = each["description"]
         else:
@@ -400,8 +400,85 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
             pprint("Created Output Dataset Specification")
         except ApiException as e:
             pprint("Exception when calling DatasetspecificationApi->create_data_set: %s\n" % e)
-
+        
     
+    logging.info(param)
+
+    api_instance = modelcatalog.ParameterApi(modelcatalog.ApiClient(configuration))
+    for each in param:
+        parameter = modelcatalog.Parameter()
+
+        if "has_default_value" in each:
+            parameter.has_default_value = [each["hasDefaultValue"]]
+        else:
+            parameter.has_default_value = []
+        
+        if "has_maximum_accepted_value" in each:
+            parameter.has_maximum_accepted_value = [each["hasMaximumAcceptedValue"]]
+        else:
+            parameter.has_maximum_accepted_value = []
+        
+        if "description" in each:
+            parameter.description = [each["description"]]
+        else:
+            parameter.description = []
+        
+        if "has_data_type" in each:
+            parameter.has_data_type = [each["hasDataType"]]
+        else:
+            parameter.has_data_type = []
+    
+        if "has_fixed_value" in each:
+            parameter.has_fixed_value = [each["hasFixedValue"]]
+        else:
+            parameter.has_fixed_value = []
+        
+        if "has_presentation" in each:
+            parameter.has_presentation = [each["hasPresentation"]]
+        else:
+            parameter.has_presentation = []
+        
+        if "label" in each:
+            parameter.label = [each["label"]]
+        else:
+            parameter.label = []
+        
+        if "type" in each:
+            parameter.type = each["type"]
+        else:
+            parameter.type = []
+        
+        if "has_minimum_accepted_value" in each:
+            parameter.has_minimum_accepted_value = [each["hasMinimumAcceptedValue"]]
+        else:
+            parameter.has_minimum_accepted_value = []
+        
+        if "adjust_variable" in each:
+            parameter.adjusts_variable = [each["adjustVariable"]]
+        else:
+            parameter.adjusts_variable = []
+        
+        if "position" in each:
+            parameter.position = [each["position"]]
+        else:
+            parameter.position = []
+        
+        if "id" in each:
+            parameter.id = each["id"]
+        else:
+            parameter.id = []
+
+        if "uses_unit" in each:
+            parameter.uses_unit = [each["uses_unit"]]
+        else:
+            parameter.uses_unit = []
+
+        try:
+            # Create a Parameter
+            api_response = api_instance.parameters_post(user=username, parameter=parameter)
+            pprint("Created Parameters")
+        except ApiException as e:
+            print("Exception when calling ParameterApi->parameters_post: %s\n" % e)
 
 
 def _main():
