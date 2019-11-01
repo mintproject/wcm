@@ -160,7 +160,7 @@ def configure_mint_api(profile="default"):
         click.secho(f"Success", fg="green")
 
 
-@cli.command(help="Deploy the pacakge to the wcm.")
+@cli.command(help="Deploy the package to the wcm.")
 @click.option("--debug/--no-debug", "-d/-nd", default=False)
 @click.option("--dry-run", "-n", is_flag=True)
 @click.option("--ignore-data/--no-ignore-data", "-i/-ni", default=False)
@@ -176,7 +176,7 @@ def configure_mint_api(profile="default"):
 )
 @click.option(
     "--apiprofile",
-    "-p",
+    "-m",
     envvar="MINT_API_PROFILE",
     type=str,
     default="default",

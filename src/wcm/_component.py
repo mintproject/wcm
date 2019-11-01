@@ -22,6 +22,7 @@ import ast
 
 
 from wcm import _schema, _utils
+import requests
 
 try:
     from yaml import CLoader as Loader
@@ -189,19 +190,18 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
     password = credentials[apiprofile]["api_password"]
 
     model_data = {}
-    with _cli(profile=profile, **creds) as cli:
-        try:
-            spec = load((component_dir / "wings-component.yml").open(), Loader=Loader)
-        except FileNotFoundError:
-            spec = load((component_dir / "wings-component.yaml").open(), Loader=Loader)
-        
-        try:
-            _schema.check_package_spec(spec)
-        except ValueError as err:
-            log.error(err)
-            exit(1)
-        
-        model_data = spec
+    try:
+        spec = load((component_dir / "wings-component.yml").open(), Loader=Loader)
+    except FileNotFoundError:
+        spec = load((component_dir / "wings-component.yaml").open(), Loader=Loader)
+    
+    try:
+        _schema.check_package_spec(spec)
+    except ValueError as err:
+        log.error(err)
+        exit(1)
+    
+    model_data = spec
 
     logging.info(model_data)
 
@@ -261,14 +261,15 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
             if 'dimensionality' in element.keys():
                 element['hasDimensionality'] = element.pop('dimensionality')
             param.append(element)
-    
     configuration = modelcatalog.Configuration()
     user_api_instance = modelcatalog.DefaultApi()
 
     # Login the user into the API to get the access token
     if username and password:
         try:
+            print("hekll")
             api_response = user_api_instance.user_login_get(username, password)
+            print("hekl")
             data = json.dumps(ast.literal_eval(api_response))
             access_token = json.loads(data)["access_token"]
             configuration.access_token = access_token
@@ -277,7 +278,6 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
     else:
         log.error("There is some issue while getting the username and password")
         exit(1)
-
 
     # Create an instance of DatasetSpecificationApi to register the input and output parameters
     api_instance = modelcatalog.DatasetSpecificationApi(modelcatalog.ApiClient(configuration))
@@ -404,7 +404,6 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
     
     logging.info(param)
 
-    api_instance = modelcatalog.ParameterApi(modelcatalog.ApiClient(configuration))
     for each in param:
         parameter = modelcatalog.Parameter()
 
@@ -473,12 +472,67 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
         else:
             parameter.uses_unit = []
 
+        api_instance = modelcatalog.ParameterApi(modelcatalog.ApiClient(configuration))
         try:
             # Create a Parameter
             api_response = api_instance.parameters_post(user=username, parameter=parameter)
             pprint("Created Parameters")
         except ApiException as e:
             print("Exception when calling ParameterApi->parameters_post: %s\n" % e)
+        
+    
+    headers = {"content-type": "application/json", "Authorization": "Bearer " + configuration.access_token}
+
+    # Create a model configuration
+    api_instance = modelcatalog.ModelConfigurationApi(modelcatalog.ApiClient(configuration))
+    model_configuration = modelcatalog.ModelConfiguration()
+
+    model_configuration={}
+    model_configuration['id'] = model_data['name']
+    model_configuration['hasInput'] = input_param
+    model_configuration['hasOutput'] = output_param
+    model_configuration['hasParameter'] = param
+    model_configuration['hasContainer'] = []
+    model_configuration['hasRepository'] = []
+    model_configuration['hasContributors'] = []
+
+    r = requests.post('https://api.models.mint.isi.edu/v1.1.0/modelconfigurations?user=dhruvrpa@usc.edu', headers = headers, data=json.dumps(model_configuration))
+    print(r.status_code)
+    print("Created the Model Configurations")
+
+    model_version = {}
+    model_version['id']=model_data['name']+'_'+model_data['version']
+    model_version['has_version_id'] = [model_data['version']]
+    model_version['has_configuration'] = []
+    model_version['has_configuration'].append({'id':model_data['name']})
+
+    print(model_version)
+
+    r = requests.post('https://api.models.mint.isi.edu/v1.1.0/softwareversions?user=dhruvrpa@usc.edu', headers = headers, data=json.dumps(model_version))
+    print(r.status_code)
+    print("Created the Model Versions")
+
+    model = {}
+    model['id'] = model_data['name']+'_model'
+    model['label'] = [model_data['name']]
+#model['description']=data['description']
+    model['has_documentation'] = []
+    #model['hasDocumentation'].append(model_data['wings']['documentation'])
+    model['has_version'] = []
+    model['has_version'].append({'id':model_data['name']+'_'+model_data['version']})
+#model['author']=data['author']
+#model['hasLicense']=data['license']
+    model['has_bugs'] = []
+#model['hasBugs'].append([{'url':element['url']},{'email':element['email']}])
+#model['hasHomepage']=data['homepage']
+    model['keywords'] = []
+
+    print(model)
+    r = requests.post('https://api.models.mint.isi.edu/v1.1.0/models?user=dhruvrpa@usc.edu', headers = headers, data=json.dumps(model))
+    print(r.status_code)
+
+    print("Created the Model")
+
 
 
 def _main():
