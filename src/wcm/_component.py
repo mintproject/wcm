@@ -32,6 +32,9 @@ except ImportError:
 log = logging.getLogger()
 __DEFAULT_MINT_API_CREDENTIALS_FILE__ = "~/.mint_api/credentials"
 
+PREFIX_URI = "https://w3id.org/okn/i/mint/"
+WINGS_EXPORT_URI = "https://w3id.org/wings/export/"
+
 @contextmanager
 def _cli(**kw):
     i = None
@@ -170,6 +173,13 @@ def deploy_component(component_dir, profile=None, creds={}, debug=False, dry_run
         finally:
             os.remove(_c)
 
+
+def make_request(request_uri, data, request_type, access_token):
+    if request_type == "POST":
+        headers = {"content-type": "application/json", "Authorization": "Bearer " + access_token}
+        response = requests.post(request_uri, headers = headers, data = json.dumps(data))
+        return response
+
 def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, creds={}, debug=False, dry_run=False, ignore_data=False, overwrite=None, upload_catalog=True):
     component_dir = Path(component_dir)
     if not component_dir.exists():
@@ -189,6 +199,7 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
     username = credentials[apiprofile]["api_username"]
     password = credentials[apiprofile]["api_password"]
 
+    # Loading the WINGS YAML File data into model_data dict
     model_data = {}
     try:
         spec = load((component_dir / "wings-component.yml").open(), Loader=Loader)
@@ -203,7 +214,22 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
     
     model_data = spec
 
-    logging.info(model_data)
+    """
+    # Loading the METADATA YAML file data into metadata dict
+    metadata = {}
+    try:
+        spec = load((component_dir / "metadata.yml").open(), Loader=Loader)
+    except FileNotFoundError:
+        spec = load((component_dir / "metadata.yaml").open(), Loader=Loader)
+    
+    try:
+        _schema.check_package_spec(spec)
+    except ValueError as err:
+        log.error(err)
+        exit(1)
+    
+    metadata = spec
+    """
 
     input_param = []
     output_param = []
@@ -211,15 +237,20 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
     for element in model_data['wings']['inputs']:
         if not element['isParam']:
             element.pop('isParam')
-            element.pop('type')
+            #element.pop('type')
             if 'role' in element.keys():
                 element['id'] = element.pop('role')
             if 'dimensionality' in element.keys():
                 element['hasDimensionality'] = element.pop('dimensionality')
             if 'prefix' in element.keys():
-                element['hasPrefix'] = element.pop('prefix')
-            if 'testValue' in element.keys():
-                element['hasTestValue'] = element.pop('testValue')
+                element['position'] = element.pop('prefix')
+            if 'type' in element.keys():
+                element['type'] = element.pop('type')
+            
+            # Ask from where do we get the metadata for the variable presentation
+            if "has_presentation" in element.keys():
+                element['hasPresentation'] = element.pop('has_presentation')
+            
             input_param.append(element)
         else:
             element.pop('isParam')
@@ -228,25 +259,30 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
             if 'paramDefaultValue' in element.keys():
                 element['hasDefaultValue'] = str(element.pop('paramDefaultValue'))
             if 'type' in element.keys():
-                element['hasDataType'] = element.pop('type')
-            if 'prefix' in element.keys():
-                element['hasPrefix'] = element.pop('prefix')
+                element['type'] = element.pop('type')
+            if "has_presentation" in element.keys():
+                element['hasPresentation'] = element.pop('has_presentation')
             if 'dimensionality' in element.keys():
                 element['hasDimensionality'] = element.pop('dimensionality')
+
             param.append(element)
     
     for element in model_data['wings']['outputs']:
         if not element['isParam']:
             element.pop('isParam')
-            element.pop('type')
+            #element.pop('type')
             if 'role' in element.keys():
                 element['id'] = element.pop('role')
             if 'dimensionality' in element.keys():
                 element['hasDimensionality'] = element.pop('dimensionality')
             if 'prefix' in element.keys():
-                element['hasPrefix'] = element.pop('prefix')
-            if 'testValue' in element.keys():
-                element['hasTestValue'] = element.pop('testValue')
+                element['position'] = element.pop('prefix')
+            if 'type' in element.keys():
+                element['type'] = element.pop('type')
+            
+            # Ask from where do we get the metadata for the variable presentation
+            if "has_presentation" in element.keys():
+                element['hasPresentation'] = element.pop('has_presentation')
             output_param.append(element)
         else:
             element.pop('isParam')
@@ -255,9 +291,9 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
             if 'paramDefaultValue' in element.keys():
                 element['hasDefaultValue'] = str(element.pop('paramDefaultValue'))
             if 'type' in element.keys():
-                element['hasDataType'] = element.pop('type')
-            if 'prefix' in element.keys():
-                element['hasPrefix'] = element.pop('prefix')
+                element['type'] = element.pop('type')
+            if "has_presentation" in element.keys():
+                element['hasPresentation'] = element.pop('has_presentation')
             if 'dimensionality' in element.keys():
                 element['hasDimensionality'] = element.pop('dimensionality')
             param.append(element)
@@ -267,9 +303,7 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
     # Login the user into the API to get the access token
     if username and password:
         try:
-            print("hekll")
             api_response = user_api_instance.user_login_get(username, password)
-            print("hekl")
             data = json.dumps(ast.literal_eval(api_response))
             access_token = json.loads(data)["access_token"]
             configuration.access_token = access_token
@@ -280,173 +314,213 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
         exit(1)
 
     # Create an instance of DatasetSpecificationApi to register the input and output parameters
-    api_instance = modelcatalog.DatasetSpecificationApi(modelcatalog.ApiClient(configuration))
     # Add input parameter to DatasetSpecification API
+    input_param_uri = []
     for each in input_param:
         logging.info(each)
-        dataset_specification = modelcatalog.DatasetSpecification()
+
+        dataset_specification = {}
 
         if "hasDimensionality" in each:
-            dataset_specification.has_dimensionality = [each["hasDimensionality"]]
-        else:
-            dataset_specification.has_dimensionality = []
+            dataset_specification["hasDimensionality"] = [each["hasDimensionality"]]
         
         if "id" in each:
-            dataset_specification.id = each["id"]
-        else:
-            dataset_specification.id = []
+            dataset_specification["id"] = each["id"]
 
-        if "has_format" in each:
-            dataset_specification.has_format = each["has_format"]
-        else:
-            dataset_specification.has_format = []
+        if "hasFormat" in each:
+            dataset_specification["hasFormat"] = [each["hasFormat"]]
         
-        if "has_file_structure" in each:
-            dataset_specification.has_file_structure = each["has_file_structure"]
-        else:
-            dataset_specification.has_file_structure = {}
+        if "hasFileStructure" in each:
+            dataset_specification["hasFileStructure"] = each["hasFileStructure"]
 
         if "description" in each:
-            dataset_specification.description = each["description"]
-        else:
-            dataset_specification.description = []
-        
+            dataset_specification["descripition"] = [each["description"]]
+
+        # What does position map to in wings yaml file
+        """
         if "position" in each:
-            dataset_specification.position = each["position"]
-        else:
-            dataset_specification.position = []
+            dataset_specification["position"] = [each["position"]]
+        """
 
         if "type" in each:
-            dataset_specification.type = each["type"]
-        else:
-            dataset_specification.type = []
-
-        if "role" in each:
-            dataset_specification.label = [each["role"]]
-        else:
-            dataset_specification.label = []
+            dataset_specification["type"] = [each["type"]]
         
-        if "has_fixed_resource" in each:
-            dataset_specification.has_fixed_resource = each["has_fixed_resource"]
-        else:
-            dataset_specification.has_fixed_resource = []
+        if "hasFixedResource" in each:
+            dataset_specification["hasFixedResource"] = each["hasFixedResource"]
+
+        if "hasPresentation" in each:
+            
+            # Handle the Internal References for hasPresentation like hasStandardVariable and partOfDataset (Doubt regarding how to handle partOfDataset)
+
+            if "hasStandardVariable" in each["hasPresentation"]:
+                response = make_request('https://api.models.mint.isi.edu/v1.1.0/standardvariables?user=' + username, each["hasPresentation"]["hasStandardVariable"], "POST", configuration.access_token)
+                if response.status_code == 201 or response.status_code == 200:
+                    print(response.json())
+                    response_data = response.json()
+                    each["hasPresentation"]["hasStandardVariable"] = response_data
+                else:
+                    print("Error creating standard variables for " + dataset_specification["id"])
+                    print(response.status_code)
+                    exit(1)
+            
+            response = make_request('https://api.models.mint.isi.edu/v1.1.0/variablepresentations?user=' + username, each["hasPresentation"], "POST", configuration.access_token)
+            if response.status_code == 201 or response.status_code == 200:
+                print(response.json())
+                response_data = response.json()
+                dataset_specification["hasPresentation"] = response_data
+            else:
+                print("Error creating variable presentation for " + dataset_specification["id"])
+                print(response.status_code)
+                exit(1)
         
-        if "has_presentation" in each:
-            dataset_specification.has_presentation = each["has_presentation"]
+        #print(dataset_specification)
+        response = make_request('https://api.models.mint.isi.edu/v1.1.0/datasetspecifications?user=' + username, dataset_specification, "POST", configuration.access_token)
+        if response.status_code == 201 or response.status_code == 200:
+            #print("Created an input parameter " + dataset_specification["id"])
+            print(response.json())
+            response_data = response.json()
+            unique_id = PREFIX_URI + response_data["id"]
+            tp = response_data["type"]
+            input_param_uri.append({"id": unique_id, "type": [ WINGS_EXPORT_URI +  tp[0], tp[1]]})
         else:
-            dataset_specification.has_presentation = []
+            print("Error creating an input paramater " + dataset_specification["id"])
+            print(response.status_code)
+            exit(1)
 
-        try:
-            api_instance.datasetspecifications_post(dataset_specification=dataset_specification, user=username)
-            pprint("Created Input Dataset Specification")
-        except ApiException as e:
-            pprint("Exception when calling DatasetspecificationApi->create_data_set: %s\n" % e)
-
+    print(input_param_uri, len(input_param_uri))
     # Add output parameter to DatasetSpecification API
+    output_param_uri = []
     for each in output_param:
-        dataset_specification = modelcatalog.DatasetSpecification()
+
+        dataset_specification = {}
 
         if "hasDimensionality" in each:
-            dataset_specification.has_dimensionality = [each["hasDimensionality"]]
-        else:
-            dataset_specification.has_dimensionality = []
+            dataset_specification["hasDimensionality"] = [each["hasDimensionality"]]
         
         if "id" in each:
-            dataset_specification.id = each["id"]
-        else:
-            dataset_specification.id = []
+            dataset_specification["id"] = each["id"]
 
-        if "has_format" in each:
-            dataset_specification.has_format = each["has_format"]
-        else:
-            dataset_specification.has_format = []
+        if "hasFormat" in each:
+            dataset_specification["hasFormat"] = [each["hasFormat"]]
         
-        if "has_file_structure" in each:
-            dataset_specification.has_file_structure = each["has_file_structure"]
-        else:
-            dataset_specification.has_file_structure = {}
-        
+        if "hasFileStructure" in each:
+            dataset_specification["hasFileStructure"] = each["hasFileStructure"]
+
         if "description" in each:
-            dataset_specification.description = each["description"]
-        else:
-            dataset_specification.description = []
-        
+            dataset_specification["descripition"] = [each["description"]]
+
+        # What does position map to in wings yaml file
+        """
         if "position" in each:
-            dataset_specification.position = each["position"]
-        else:
-            dataset_specification.position = []
+            dataset_specification["position"] = [each["position"]]
+        """
 
         if "type" in each:
-            dataset_specification.type = each["type"]
-        else:
-            dataset_specification.type = []
+            dataset_specification["type"] = [each["type"]]
+        
+        if "hasFixedResource" in each:
+            dataset_specification["hasFixedResource"] = each["hasFixedResource"]
 
-        if "role" in each:
-            dataset_specification.label = [each["role"]]
-        else:
-            dataset_specification.label = []
-        
-        if "has_fixed_resource" in each:
-            dataset_specification.has_fixed_resource = each["has_fixed_resource"]
-        else:
-            dataset_specification.has_fixed_resource = []
-        
-        if "has_presentation" in each:
-            dataset_specification.has_presentation = each["has_presentation"]
-        else:
-            dataset_specification.has_presentation = []
-        try:
-            api_instance.datasetspecifications_post(dataset_specification=dataset_specification, user=username)
-            pprint("Created Output Dataset Specification")
-        except ApiException as e:
-            pprint("Exception when calling DatasetspecificationApi->create_data_set: %s\n" % e)
-        
-    
-    logging.info(param)
+        if "hasPresentation" in each:
+            
+            # Handle the Internal References for hasPresentation like hasStandardVariable and partOfDataset (Doubt regarding how to handle partOfDataset)
 
+            if "hasStandardVariable" in each["hasPresentation"]:
+                response = make_request('https://api.models.mint.isi.edu/v1.1.0/standardvariables?user=' + username, each["hasPresentation"]["hasStandardVariable"], "POST", configuration.access_token)
+                if response.status_code == 201 or response.status_code == 200:
+                    print(response.json())
+                    response_data = response.json()
+                    each["hasPresentation"]["hasStandardVariable"] = response_data
+                else:
+                    print("Error creating standard variables for " + dataset_specification["id"])
+                    print(response.status_code)
+                    exit(1)
+            
+            response = make_request('https://api.models.mint.isi.edu/v1.1.0/variablepresentations?user=' + username, each["hasPresentation"], "POST", configuration.access_token)
+            if response.status_code == 201 or response.status_code == 200:
+                print(response.json())
+                response_data = response.json()
+                dataset_specification["hasPresentation"] = response_data
+            else:
+                print("Error creating variable presentation for " + dataset_specification["id"])
+                print(response.status_code)
+                exit(1)
+        
+        response = make_request('https://api.models.mint.isi.edu/v1.1.0/datasetspecifications?user=' + username, dataset_specification, "POST", configuration.access_token)
+        if response.status_code == 201 or response.status_code == 200:
+            #print("Created an output parameter " + dataset_specification["id"])
+            print(response.json())
+            response_data = response.json()
+            unique_id = PREFIX_URI + response_data["id"]
+            tp = response_data["type"]
+            output_param_uri.append({"id": unique_id, "type": [ WINGS_EXPORT_URI +  tp[0], tp[1]]})
+        else:
+            print("Error creating an output paramater " + dataset_specification["id"])
+            print(response.status_code)
+            exit(1)
+
+    print(output_param_uri, len(output_param_uri))
+
+    # Registering the Parameters through the ParameterAPI
+    parameter_uri = []
     for each in param:
-        parameter = modelcatalog.Parameter()
-
+        parameter = {}
+    
         if "has_default_value" in each:
-            parameter.has_default_value = [each["hasDefaultValue"]]
-        else:
-            parameter.has_default_value = []
+            parameter["hasDefaultValue"] = [each["hasDefaultValue"]]
         
+        """
         if "has_maximum_accepted_value" in each:
-            parameter.has_maximum_accepted_value = [each["hasMaximumAcceptedValue"]]
-        else:
-            parameter.has_maximum_accepted_value = []
+            parameter["hasMaximumAcceptedValue"] = [each["hasMaximumAcceptedValue"]]
         
         if "description" in each:
-            parameter.description = [each["description"]]
-        else:
-            parameter.description = []
-        
+            parameter["description"] = [each["description"]]
+
         if "has_data_type" in each:
-            parameter.has_data_type = [each["hasDataType"]]
-        else:
-            parameter.has_data_type = []
-    
+            parameter["hasDataType"] = [each["hasDataType"]]
+
         if "has_fixed_value" in each:
             parameter.has_fixed_value = [each["hasFixedValue"]]
         else:
             parameter.has_fixed_value = []
+        """
         
-        if "has_presentation" in each:
-            parameter.has_presentation = [each["hasPresentation"]]
-        else:
-            parameter.has_presentation = []
+        if "hasPresentation" in each:
+            
+            # Handle the Internal References for hasPresentation like hasStandardVariable and partOfDataset (Doubt regarding how to handle partOfDataset)
+
+            if "hasStandardVariable" in each["hasPresentation"]:
+                response = make_request('https://api.models.mint.isi.edu/v1.1.0/standardvariables?user=' + username, each["hasPresentation"]["hasStandardVariable"], "POST", configuration.access_token)
+                if response.status_code == 201 or response.status_code == 200:
+                    print(response.json())
+                    response_data = response.json()
+                    each["hasPresentation"]["hasStandardVariable"] = response_data
+                else:
+                    print("Error creating standard variables for " + dataset_specification["id"])
+                    print(response.status_code)
+                    exit(1)
+            
+            response = make_request('https://api.models.mint.isi.edu/v1.1.0/variablepresentations?user=' + username, each["hasPresentation"], "POST", configuration.access_token)
+            if response.status_code == 201 or response.status_code == 200:
+                print(response.json())
+                response_data = response.json()
+                dataset_specification["hasPresentation"] = response_data
+            else:
+                print("Error creating variable presentation for " + dataset_specification["id"])
+                print(response.status_code)
+                exit(1)
         
+        """
         if "label" in each:
             parameter.label = [each["label"]]
         else:
             parameter.label = []
-        
+        """
+
         if "type" in each:
-            parameter.type = each["type"]
-        else:
-            parameter.type = []
+            parameter["type"] = [each["type"]]
         
+        """
         if "has_minimum_accepted_value" in each:
             parameter.has_minimum_accepted_value = [each["hasMinimumAcceptedValue"]]
         else:
@@ -456,82 +530,63 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
             parameter.adjusts_variable = [each["adjustVariable"]]
         else:
             parameter.adjusts_variable = []
-        
+
         if "position" in each:
             parameter.position = [each["position"]]
         else:
             parameter.position = []
+        """
         
         if "id" in each:
-            parameter.id = each["id"]
-        else:
-            parameter.id = []
-
+            parameter["id"] = each["id"]
+        
+        """
         if "uses_unit" in each:
             parameter.uses_unit = [each["uses_unit"]]
         else:
             parameter.uses_unit = []
+        """
 
-        api_instance = modelcatalog.ParameterApi(modelcatalog.ApiClient(configuration))
-        try:
-            # Create a Parameter
-            api_response = api_instance.parameters_post(user=username, parameter=parameter)
-            pprint("Created Parameters")
-        except ApiException as e:
-            print("Exception when calling ParameterApi->parameters_post: %s\n" % e)
-        
-    
-    headers = {"content-type": "application/json", "Authorization": "Bearer " + configuration.access_token}
+        response = make_request('https://api.models.mint.isi.edu/v1.1.0/parameters?user=' + username, parameter, "POST", configuration.access_token)
+        if response.status_code == 201 or response.status_code == 200:
+            print("Created a parameter " + parameter["id"])
+            print(response.json())
+            response_data = response.json()
+            unique_id = PREFIX_URI + response_data["id"]
+            parameter_uri.append({"id": unique_id, "type": response_data["type"]})
+        else:
+            print("Error creating a parameter " + parameter["id"])
+            print(response.status_code)
+            exit(1)
 
     # Create a model configuration
-    api_instance = modelcatalog.ModelConfigurationApi(modelcatalog.ApiClient(configuration))
-    model_configuration = modelcatalog.ModelConfiguration()
+    model_configuration = {}
+    if "name" in model_data:
+        model_configuration['id'] = model_data['name']
+    
+    model_configuration['hasInput'] = input_param_uri
+    model_configuration['hasOutput'] = output_param_uri
+    model_configuration['hasParameter'] = parameter_uri
 
-    model_configuration={}
-    model_configuration['id'] = model_data['name']
-    model_configuration['hasInput'] = input_param
-    model_configuration['hasOutput'] = output_param
-    model_configuration['hasParameter'] = param
-    model_configuration['hasContainer'] = []
-    model_configuration['hasRepository'] = []
-    model_configuration['hasContributors'] = []
+    if "contributor" in model_data:
+        model_configuration["hasContributors"] = model_data["contributors"]
+    
+    if "author" in model_data:
+        model_configuration["author"] = model_data["author"]
+    
+    if "licence" in model_data:
+        model_configuration["licence"] = model_data["licence"]
+    
+    model_configuration["hasVersion"] = [{'id':model_data['name'] + '_' + model_data['version']}]
 
-    r = requests.post('https://api.models.mint.isi.edu/v1.1.0/modelconfigurations?user=dhruvrpa@usc.edu', headers = headers, data=json.dumps(model_configuration))
-    print(r.status_code)
-    print("Created the Model Configurations")
-
-    model_version = {}
-    model_version['id']=model_data['name']+'_'+model_data['version']
-    model_version['has_version_id'] = [model_data['version']]
-    model_version['has_configuration'] = []
-    model_version['has_configuration'].append({'id':model_data['name']})
-
-    print(model_version)
-
-    r = requests.post('https://api.models.mint.isi.edu/v1.1.0/softwareversions?user=dhruvrpa@usc.edu', headers = headers, data=json.dumps(model_version))
-    print(r.status_code)
-    print("Created the Model Versions")
-
-    model = {}
-    model['id'] = model_data['name']+'_model'
-    model['label'] = [model_data['name']]
-#model['description']=data['description']
-    model['has_documentation'] = []
-    #model['hasDocumentation'].append(model_data['wings']['documentation'])
-    model['has_version'] = []
-    model['has_version'].append({'id':model_data['name']+'_'+model_data['version']})
-#model['author']=data['author']
-#model['hasLicense']=data['license']
-    model['has_bugs'] = []
-#model['hasBugs'].append([{'url':element['url']},{'email':element['email']}])
-#model['hasHomepage']=data['homepage']
-    model['keywords'] = []
-
-    print(model)
-    r = requests.post('https://api.models.mint.isi.edu/v1.1.0/models?user=dhruvrpa@usc.edu', headers = headers, data=json.dumps(model))
-    print(r.status_code)
-
-    print("Created the Model")
+    response = make_request('https://api.models.mint.isi.edu/v1.1.0/modelconfigurations?user=' + username, model_configuration, "POST", configuration.access_token)
+    if response.status_code == 201 or response.status_code == 200:
+        print("Created a Model Configuration " + response.json()["id"])
+        print(response.json())
+    else:
+        print("Error creating Model Configuration")
+        print(response.status_code)
+        exit(1)
 
 
 
@@ -560,8 +615,6 @@ def _main():
     _utils.init_logger()
 
     deploy_component(**vars(args))
-
-
 
 if __name__ == "__main__":
     try:

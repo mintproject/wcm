@@ -5,7 +5,7 @@ wcm.
 :license: Apache 2.0
 """
 
-
+import configparser
 import logging
 import os
 import sys
@@ -16,7 +16,7 @@ import click
 import semver
 
 import wcm
-from wcm import _component, _utils, _download, _list, _makeyaml
+from wcm import _component, _utils, _download, _list, _makeyaml, _schema, _metadata_schema
 
 __DEFAULT_WCM_CREDENTIALS_FILE__ = "~/.wcm/credentials"
 __DEFAULT_MINT_API_CREDENTIALS_FILE__ = "~/.mint_api/credentials"
@@ -224,6 +224,22 @@ def download(component_id, profile="default", path=None, force=False):
     logging.info("Downloading component")
     _download.download(component_id, profile=profile, download_path=path, overwrite=force)
     click.secho(f"Success", fg="green")
+
+@cli.command(help="Validate the YAML obtained after doing wcm download")
+@click.option(
+    "--profile",
+    "-p",
+    envvar="WCM_PROFILE",
+    type=str,
+    default="default",
+    metavar="<profile-name>",
+)
+@click.argument("wings_core_file_path", default=None, type=str)
+@click.argument("metadata_file_path", default=None, type=str)
+def validate(wings_core_file_path, metadata_file_path, profile="default"):
+
+    _schema.validate_file(wings_core_file_path)
+    _metadata_schema.validate_file(metadata_file_path, wings_core_file_path)
 
 
 @cli.command(help="Lists all the components in the current wings instance")
