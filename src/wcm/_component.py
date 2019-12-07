@@ -351,13 +351,13 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
         if "hasPresentation" in each:
             
             # Handle the Internal References for hasPresentation like hasStandardVariable and partOfDataset (Doubt regarding how to handle partOfDataset)
-
+            standard_variable = {}
             if "hasStandardVariable" in each["hasPresentation"]:
                 response = make_request('https://api.models.mint.isi.edu/v1.1.0/standardvariables?user=' + username, each["hasPresentation"]["hasStandardVariable"], "POST", configuration.access_token)
                 if response.status_code == 201 or response.status_code == 200:
                     print(response.json())
                     response_data = response.json()
-                    each["hasPresentation"]["hasStandardVariable"] = response_data
+                    standard_variable = response_data
                 else:
                     print("Error creating standard variables for " + dataset_specification["id"])
                     print(response.status_code)
@@ -368,6 +368,7 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
                 print(response.json())
                 response_data = response.json()
                 dataset_specification["hasPresentation"] = response_data
+                dataset_specification["hasPresentation"]["hasStandardVariable"] = standard_variable
             else:
                 print("Error creating variable presentation for " + dataset_specification["id"])
                 print(response.status_code)
@@ -424,13 +425,13 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
         if "hasPresentation" in each:
             
             # Handle the Internal References for hasPresentation like hasStandardVariable and partOfDataset (Doubt regarding how to handle partOfDataset)
-
+            standard_variable = {}
             if "hasStandardVariable" in each["hasPresentation"]:
                 response = make_request('https://api.models.mint.isi.edu/v1.1.0/standardvariables?user=' + username, each["hasPresentation"]["hasStandardVariable"], "POST", configuration.access_token)
                 if response.status_code == 201 or response.status_code == 200:
                     print(response.json())
                     response_data = response.json()
-                    each["hasPresentation"]["hasStandardVariable"] = response_data
+                    standard_variable = response_data
                 else:
                     print("Error creating standard variables for " + dataset_specification["id"])
                     print(response.status_code)
@@ -441,6 +442,7 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
                 print(response.json())
                 response_data = response.json()
                 dataset_specification["hasPresentation"] = response_data
+                dataset_specification["hasPresentation"]["hasStandardVariable"] = standard_variable
             else:
                 print("Error creating variable presentation for " + dataset_specification["id"])
                 print(response.status_code)
@@ -488,13 +490,13 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
         if "hasPresentation" in each:
             
             # Handle the Internal References for hasPresentation like hasStandardVariable and partOfDataset (Doubt regarding how to handle partOfDataset)
-
+            standard_variable = {}
             if "hasStandardVariable" in each["hasPresentation"]:
                 response = make_request('https://api.models.mint.isi.edu/v1.1.0/standardvariables?user=' + username, each["hasPresentation"]["hasStandardVariable"], "POST", configuration.access_token)
                 if response.status_code == 201 or response.status_code == 200:
                     print(response.json())
                     response_data = response.json()
-                    each["hasPresentation"]["hasStandardVariable"] = response_data
+                    standard_variable = response_data
                 else:
                     print("Error creating standard variables for " + dataset_specification["id"])
                     print(response.status_code)
@@ -505,6 +507,7 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
                 print(response.json())
                 response_data = response.json()
                 dataset_specification["hasPresentation"] = response_data
+                dataset_specification["hasPresentation"]["hasStandardVariable"] = standard_variable
             else:
                 print("Error creating variable presentation for " + dataset_specification["id"])
                 print(response.status_code)
