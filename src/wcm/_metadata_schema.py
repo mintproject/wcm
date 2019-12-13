@@ -791,7 +791,7 @@ def validate_file(metadata_path, wings_path):
       if(metadata_loaded['wingsId'].strip() == wings_loaded['name'].strip() + '-' + wings_loaded['version'].strip()):
          check_package_spec(metadata_loaded)
       else:
-         print("Two files are not consistent")
+         print("Two files are not consistent") 
 
 
 

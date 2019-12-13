@@ -1,0 +1,291 @@
+author:
+- id: https://w3id.org/okn/i/mint/mayani_rajiv
+  label:
+  - Rajiv Mayani
+  type:
+  - Person
+contributor:
+- id: https://w3id.org/okn/i/mint/khider_deborah
+  type: Person
+- id: https://w3id.org/okn/i/mint/zhang_zeya
+  type: Person
+description:
+- Aggregate crop supply response model for the country of South Sudan (version 2)
+hasCausalDiagram:
+- hasPart:
+  - https://w3id.org/okn/i/mint/crop_yield_elasticity
+  - https://w3id.org/okn/i/mint/crop_prices
+  - https://w3id.org/okn/i/mint/fertilizer_prices
+  - https://w3id.org/okn/i/mint/land_use
+  - https://w3id.org/okn/i/mint/fertilizer_use
+  - https://w3id.org/okn/i/mint/crop_supply
+  - https://w3id.org/okn/i/mint/crop_yield
+  id: https://w3id.org/okn/i/mint/economic_aggregate_crop_supply_CAG_process
+  label:
+  - CAG for Economic model for aggregate crop supply response model processes for
+    the country of South Sudan configuration
+  type:
+  - CausalDiagram
+- hasPart:
+  - id: https://w3id.org/okn/i/mint/econ_xbar1
+    type: VariablePresentation
+  - id: https://w3id.org/okn/i/mint/econ_xbar2
+    type: VariablePresentation
+  - id: https://w3id.org/okn/i/mint/econ_c1
+    type: VariablePresentation
+  - id: https://w3id.org/okn/i/mint/econ_c2
+    type: VariablePresentation
+  - id: https://w3id.org/okn/i/mint/econ_ybar
+    type: VariablePresentation
+  - id: https://w3id.org/okn/i/mint/econ_ybarN
+    type: VariablePresentation
+  - id: https://w3id.org/okn/i/mint/econ_p
+    type: VariablePresentation
+  - id: https://w3id.org/okn/i/mint/econ_obsyield
+    type: VariablePresentation
+  - id: https://w3id.org/okn/i/mint/econ_production
+    type: VariablePresentation
+  - id: https://w3id.org/okn/i/mint/econ_land_area
+    type: VariablePresentation
+  - id: https://w3id.org/okn/i/mint/econ_eta
+    type: VariablePresentation
+  id: https://w3id.org/okn/i/mint/economic_aggregate_crop_supply_CAG_variables
+  label:
+  - CAG for Economic model for aggregate crop supply response model variables for
+    the country of South Sudan configuration
+  type:
+  - CausalDiagram
+hasComponentLocation:
+- https://github.com/mintproject/MINT-WorkflowDomain/raw/master/WINGSWorkflowComponents/economic-v2/economic-v2.zip
+hasGrid:
+- description:
+  - Grid from the economic crop supply model
+  hasDimension:
+  - 0D
+  hasShape:
+  - Point
+  hasSpatialResolution:
+  - Point
+  id: https://w3id.org/okn/i/mint/econ_grid
+  label:
+  - Grid from the economic crop supply model
+  type:
+  - PointBasedGrid
+  - Grid
+hasImplementationScriptLocation:
+- https://github.com/mintproject/MINT-WorkflowDomain/raw/master/WINGSWorkflowComponents/economic-v2/run
+hasInput:
+- description:
+  - Contains the economic data used in the simulation analysis
+  hasDimensionality:
+  - 0
+  hasFormat:
+  - csv
+  hasPresentation:
+  - description:
+    - costs of production per unit land area
+    hasLongName:
+    - land cost
+    hasShortName:
+    - c1
+    hasStandardVariable:
+    - id: b6cba1e6-0b7e-43a8-bea8-d1f791273052
+      label:
+      - land_crop__production_cost-per-area
+      type:
+      - http://www.geoscienceontology.org/svo/svu#Variable
+      - http://www.w3.org/2002/07/owl#NamedIndividual
+    id: 6331f6b5-9da8-4e38-aeae-da4bc02015da
+    label:
+    - c1
+    type:
+    - VariablePresentation
+    usesUnit:
+    - id: https://w3id.org/okn/i/mint/USD_ha_1L_2
+      label:
+      - USD ha-1
+      type: http://qudt.org/1.1/schema/qudt#Unit
+  id: 41885934-5187-4f86-bbf2-32bc3da6302b
+  label:
+  - economic-sim
+  position:
+  - 4
+  type:
+  - DatasetSpecification
+  - https://w3id.org/wings/export/MINT#EconomicSimData
+- description:
+  - File indicating the economic subsidies to use on each iteration of the model
+  hasDimensionality:
+  - 0
+  hasFormat:
+  - txt
+  id: f4815fd5-3eef-4e51-80be-5db2ae50cfd1
+  label:
+  - economic-subsidies
+  position:
+  - 5
+  type:
+  - https://w3id.org/wings/export/MINT#EconomicSubsidies
+  - DatasetSpecification
+- description:
+  - Contains the yield elasticities to fertilizer use that are derived from Cycles
+    output
+  hasDimensionality:
+  - 0
+  hasFormat:
+  - csv
+  hasPresentation:
+  - id: https://w3id.org/okn/i/mint/econ_ybarN
+    label:
+    - ybarN
+    type:
+    - VariablePresentation
+  id: https://w3id.org/okn/i/mint/econ_v2_yield
+  label:
+  - crop-yield
+  position:
+  - 1
+  type:
+  - https://w3id.org/wings/export/MINT#CropYield
+  - DatasetSpecification
+- description:
+  - Contains data on land planted to each crop and fertilizer use and observed yields.
+    These data are used to calibrate the production function in the model.
+  hasDimensionality:
+  - 0
+  hasFormat:
+  - csv
+  hasPresentation:
+  - id: https://w3id.org/okn/i/mint/econ_xbar1
+    label:
+    - xbar1
+    type:
+    - VariablePresentation
+  - id: https://w3id.org/okn/i/mint/econ_xbar2
+    label:
+    - xbar2
+    type:
+    - VariablePresentation
+  - id: https://w3id.org/okn/i/mint/econ_ybar
+    label:
+    - ybar
+    type:
+    - VariablePresentation
+  id: https://w3id.org/okn/i/mint/econ_v2_calib
+  label:
+  - economic-calib
+  position:
+  - 2
+  type:
+  - DatasetSpecification
+  - https://w3id.org/wings/export/MINT#EconomicCalibData
+- description:
+  - Contains data on observed prices for each crop and supply elasticities and the
+    costs of production for each crop
+  hasDimensionality:
+  - 0
+  hasFormat:
+  - csv
+  hasPresentation:
+  - id: https://w3id.org/okn/i/mint/econ_eta
+    label:
+    - eta
+    type:
+    - VariablePresentation
+  - id: https://w3id.org/okn/i/mint/econ_c2
+    label:
+    - c2
+    type:
+    - VariablePresentation
+  - id: https://w3id.org/okn/i/mint/econ_c1
+    label:
+    - c1
+    type:
+    - VariablePresentation
+  - id: https://w3id.org/okn/i/mint/econ_p
+    label:
+    - p
+    type:
+    - VariablePresentation
+  id: https://w3id.org/okn/i/mint/econ_v2_data
+  label:
+  - economic-data
+  position:
+  - 3
+  type:
+  - DatasetSpecification
+  - https://w3id.org/wings/export/MINT#EconomicData
+hasModelCategory:
+- Economy
+hasOutput:
+- id: https://w3id.org/okn/i/mint/econ_v2_land_use
+  type:
+  - https://w3id.org/wings/export/MINT#EconomicLandUse
+  - DatasetSpecification
+hasOutputTimeInterval:
+- description:
+  - Time interval used in the aggregate crop supply response model for the country
+    of South Sudan configuration
+  id: https://w3id.org/okn/i/mint/economic_aggregate_crop_supply_TI
+  label:
+  - Simple economic time interval
+  type:
+  - TimeInterval
+hasProcess:
+- id: https://w3id.org/okn/i/mint/crop_yield_elasticity_process
+  type:
+  - Process
+- id: https://w3id.org/okn/i/mint/crop_prices_process
+  type:
+  - Process
+- id: https://w3id.org/okn/i/mint/land_use_process
+  type:
+  - Process
+- id: https://w3id.org/okn/i/mint/crop_supply_process
+  label:
+  - Crop supply
+  type:
+  - Process
+- id: https://w3id.org/okn/i/mint/fertilizer_prices_process
+  type:
+  - Process
+- id: https://w3id.org/okn/i/mint/fertilizer_use_process
+  type:
+  - Process
+hasRegion:
+- description:
+  - Area of the Pongo Basin in South Sudan
+  id: https://w3id.org/okn/i/mint/Pongo_Basin_SS
+  label:
+  - Pongo basin region (South Sudan)
+  type:
+  - Region
+hasSoftwareImage:
+- id: https://w3id.org/okn/i/mint/MINTPROJECT-ECONOMIC:V2
+  label:
+  - mintproject/economic:v2
+  type:
+  - SoftwareImage
+hasSourceCode:
+- codeRepository:
+  - https://github.com/mintproject/MINT-WorkflowDomain/tree/master/WINGSWorkflowComponents/economic-v2
+  description:
+  - Code for creating an encapsulation of EACS for a model configuration (version
+    2)
+  id: https://w3id.org/okn/i/mint/source_econ_config_v2
+  label:
+  - EACS configuration component (version 2 of code)
+  programmingLanguage:
+  - shell
+  type:
+  - SourceCode
+id: https://w3id.org/okn/i/mint/economic-v2
+keywords:
+- economy; land use; crop production; fertilizer costs
+label:
+- Basic configuration of the economic aggregate crop supply model (EACS) v2
+type:
+- Theory-GuidedModel
+- SoftwareConfiguration
+- ModelConfiguration
+wingsId: economic-2.0.0

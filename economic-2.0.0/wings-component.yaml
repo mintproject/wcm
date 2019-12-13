@@ -1,0 +1,41 @@
+name: economic
+version: 2.0.0
+schemaVersion: 0.0.1
+wings:
+  inputs:
+  - role: economic-sim
+    prefix: -i1
+    isParam: false
+    type: dcdom:economic-cycles-data
+    dimensionality: 0
+  - role: economic-subsidies
+    prefix: -i2
+    isParam: false
+    type: dcdom:economic-land-input
+    dimensionality: 0
+  outputs: []
+  rules: []
+  inheritedRules: []
+  documentation: Economic Model
+  requirement:
+    storageGB: 0.0
+    memoryGB: 0.0
+    need64bit: false
+    softwareIds: []
+  componentType: Economic
+  source: https://w3id.org/okn/i/mint/economic-v6
+  files:
+  - src\*
+  data:
+    economic-cycles-data:
+      files: []
+    economic-land-input:
+      files: []
+    economic-price:
+      files: []
+    economic-production-cost:
+      files: []
+    EconomicLandUse:
+      files: []
+    EconomicCalibration:
+      files: []
