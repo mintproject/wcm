@@ -419,110 +419,115 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
             dataset_specification["hasFixedResource"] = each["hasFixedResource"]
 
         if "hasPresentation" in each:
-            presentation_id_exists, p_idx_of_ids = check_if_id_exists_in_yaml(metadata["hasInput"][idx_of_id]["hasPresentation"], each["hasPresentation"][0]["label"][0])
-            # Handle the Internal References for hasPresentation like hasStandardVariable and partOfDataset (Doubt regarding how to handle partOfDataset)
-            #print(p_idx_of_ids)
-            standard_variable = {}
-            if "hasStandardVariable" in each["hasPresentation"][0]:
-                if isinstance(metadata["hasInput"][idx_of_id]["hasPresentation"][p_idx_of_ids]["hasStandardVariable"], dict):
-                    metadata["hasInput"][idx_of_id]["hasPresentation"][p_idx_of_ids]["hasStandardVariable"] = [metadata["hasInput"][idx_of_id]["hasPresentation"][p_idx_of_ids]["hasStandardVariable"]]
-                #print(metadata["hasInput"][idx_of_id]["hasPresentation"][p_idx_of_ids]["hasStandardVariable"])
-                standard_variable_id_exists, s_idx_of_ids = check_if_id_exists_in_yaml(metadata["hasInput"][idx_of_id]["hasPresentation"][p_idx_of_ids]["hasStandardVariable"], each["hasPresentation"][0]["hasStandardVariable"][0]["label"][0])
-                #print(s_idx_of_ids)
-                if not standard_variable_id_exists:
-                    print("Standard Variable POST")
-                    response = make_request('https://api.models.mint.isi.edu/v1.1.0/standardvariables', each["hasPresentation"][0]["hasStandardVariable"][0], "POST", configuration.access_token, {'user': 'dhruvrpa@usc.edu'})
+            dataset_specification["hasPresentation"] = []
+            for present_index, each_presentation in enumerate(each["hasPresentation"]):
+
+                presentation_id_exists, p_idx_of_ids = check_if_id_exists_in_yaml(metadata["hasInput"][idx_of_id]["hasPresentation"], each["hasPresentation"][present_index]["label"][0])
+                # Handle the Internal References for hasPresentation like hasStandardVariable and partOfDataset (Doubt regarding how to handle partOfDataset)
+                print(p_idx_of_ids)
+                standard_variable = {}
+                if "hasStandardVariable" in each["hasPresentation"][present_index]:
+                    if isinstance(metadata["hasInput"][idx_of_id]["hasPresentation"][p_idx_of_ids]["hasStandardVariable"], dict):
+                        metadata["hasInput"][idx_of_id]["hasPresentation"][p_idx_of_ids]["hasStandardVariable"] = [metadata["hasInput"][idx_of_id]["hasPresentation"][p_idx_of_ids]["hasStandardVariable"]]
+
+                    print(metadata["hasInput"][idx_of_id]["hasPresentation"][p_idx_of_ids]["hasStandardVariable"])
+                    standard_variable_id_exists, s_idx_of_ids = check_if_id_exists_in_yaml(metadata["hasInput"][idx_of_id]["hasPresentation"][p_idx_of_ids]["hasStandardVariable"], each["hasPresentation"][present_index]["hasStandardVariable"][0]["label"][0])
+                    print(s_idx_of_ids)
+                    if not standard_variable_id_exists:
+                        print("Standard Variable POST")
+                        response = make_request('https://api.models.mint.isi.edu/v1.1.0/standardvariables', each["hasPresentation"][present_index]["hasStandardVariable"][0], "POST", configuration.access_token, {'user': 'dhruvrpa@usc.edu'})
+                        if response.status_code == 201 or response.status_code == 200:
+                            print(response.json())
+                            response_data = response.json()
+
+                            unique_id = PREFIX_URI + response_data["id"]
+
+                            # Adding the unique id to the YAML file
+                
+                            metadata["hasInput"][idx_of_id]["hasPresentation"][p_idx_of_ids]["hasStandardVariable"][s_idx_of_ids]["id"] = unique_id
+
+                            # Writing the new ID to the YAML file
+                            with open(component_dir / "metadata.yaml", "w") as fp:
+                                dump(metadata, fp)
+
+                            standard_variable = response_data
+                        else:
+                            #print("Error creating standard variables for " + dataset_specification["id"])
+                            print(response.status_code)
+                            exit(1)
+                    else:
+                        print("Standard Variable PUT")
+                        resource_id = metadata["hasInput"][idx_of_id]["hasPresentation"][p_idx_of_ids]["hasStandardVariable"][s_idx_of_ids]["id"]
+                        resource_id = resource_id.split("/")
+                        del each["hasPresentation"][present_index]["hasStandardVariable"][0]["id"]
+                        response = make_request('https://api.models.mint.isi.edu/v1.1.0/standardvariables/' + resource_id[-1], each["hasPresentation"][present_index]["hasStandardVariable"][0], "PUT", configuration.access_token, {'user': 'dhruvrpa@usc.edu'})
+                        if response.status_code == 201 or response.status_code == 200:
+                            print(response.json())
+                            response_data = response.json()
+
+                            unique_id = PREFIX_URI + response_data["id"]
+
+                            # Adding the unique id to the YAML file
+                            metadata["hasInput"][idx_of_id]["hasPresentation"][p_idx_of_ids]["hasStandardVariable"][s_idx_of_ids]["id"] = unique_id
+
+                            # Writing the new ID to the YAML file
+                            with open(component_dir / "metadata.yaml", "w") as fp:
+                                dump(metadata, fp)
+
+                            standard_variable = response_data
+                        else:
+                            #print("Error creating standard variables for " + dataset_specification["id"])
+                            print(response.status_code)
+                            exit(1)
+            
+                if not presentation_id_exists:
+                    print("Variable Presentation POST")
+                    print(each["hasPresentation"][present_index])
+                    response = make_request('https://api.models.mint.isi.edu/v1.1.0/variablepresentations', each["hasPresentation"][present_index], "POST", configuration.access_token, {'user': 'dhruvrpa@usc.edu'})
                     if response.status_code == 201 or response.status_code == 200:
                         print(response.json())
-                        response_data = response.json()
-
+                        response_data = response.json() 
                         unique_id = PREFIX_URI + response_data["id"]
 
                         # Adding the unique id to the YAML file
-            
-                        metadata["hasInput"][idx_of_id]["hasPresentation"][p_idx_of_ids]["hasStandardVariable"][s_idx_of_ids]["id"] = unique_id
+                        metadata["hasInput"][idx_of_id]["hasPresentation"][p_idx_of_ids]["id"] = unique_id
 
                         # Writing the new ID to the YAML file
                         with open(component_dir / "metadata.yaml", "w") as fp:
                             dump(metadata, fp)
 
-                        standard_variable = response_data
+                        dataset_specification["hasPresentation"].append(response_data)
+                        if standard_variable:
+                            dataset_specification["hasPresentation"][0]["hasStandardVariable"] = [standard_variable]
+                        else:
+                            dataset_specification["hasPresentation"][0]["hasStandardVariable"] = []
                     else:
-                        #print("Error creating standard variables for " + dataset_specification["id"])
+                        #print("Error creating variable presentation for " + dataset_specification["id"])
                         print(response.status_code)
                         exit(1)
                 else:
-                    print("Standard Variable PUT")
-                    resource_id = metadata["hasInput"][idx_of_id]["hasPresentation"][p_idx_of_ids]["hasStandardVariable"][s_idx_of_ids]["id"]
+                    print("Variable Presentation PUT")
+                    resource_id = metadata["hasInput"][idx_of_id]["hasPresentation"][p_idx_of_ids]["id"]
                     resource_id = resource_id.split("/")
-                    del each["hasPresentation"][0]["hasStandardVariable"][0]["id"]
-                    response = make_request('https://api.models.mint.isi.edu/v1.1.0/standardvariables/' + resource_id[-1], each["hasPresentation"][0]["hasStandardVariable"][0], "PUT", configuration.access_token, {'user': 'dhruvrpa@usc.edu'})
+                    response = make_request('https://api.models.mint.isi.edu/v1.1.0/variablepresentations/' + resource_id[-1], each["hasPresentation"][0], "PUT", configuration.access_token,{'user': 'dhruvrpa@usc.edu'})
                     if response.status_code == 201 or response.status_code == 200:
                         print(response.json())
                         response_data = response.json()
-
                         unique_id = PREFIX_URI + response_data["id"]
 
                         # Adding the unique id to the YAML file
-                        metadata["hasInput"][idx_of_id]["hasPresentation"][p_idx_of_ids]["hasStandardVariable"][s_idx_of_ids]["id"] = unique_id
+                        metadata["hasInput"][idx_of_id]["hasPresentation"][p_idx_of_ids]["id"] = unique_id
 
                         # Writing the new ID to the YAML file
                         with open(component_dir / "metadata.yaml", "w") as fp:
                             dump(metadata, fp)
 
-                        standard_variable = response_data
-                    else:
-                        #print("Error creating standard variables for " + dataset_specification["id"])
-                        print(response.status_code)
-                        exit(1)
-            
-            if not presentation_id_exists:
-                print("Variable Presentation POST")
-                response = make_request('https://api.models.mint.isi.edu/v1.1.0/variablepresentations', each["hasPresentation"][0], "POST", configuration.access_token, {'user': 'dhruvrpa@usc.edu'})
-                if response.status_code == 201 or response.status_code == 200:
-                    print(response.json())
-                    response_data = response.json() 
-                    unique_id = PREFIX_URI + response_data["id"]
-
-                    # Adding the unique id to the YAML file
-                    metadata["hasInput"][idx_of_id]["hasPresentation"][p_idx_of_ids]["id"] = unique_id
-
-                    # Writing the new ID to the YAML file
-                    with open(component_dir / "metadata.yaml", "w") as fp:
-                        dump(metadata, fp)
-
-                    dataset_specification["hasPresentation"] = [response_data]
-                    dataset_specification["hasPresentation"][0]["hasStandardVariable"] = [standard_variable]
-                else:
-                    #print("Error creating variable presentation for " + dataset_specification["id"])
-                    print(response.status_code)
-                    exit(1)
-            else:
-                print("Variable Presentation PUT")
-                resource_id = metadata["hasInput"][idx_of_id]["hasPresentation"][p_idx_of_ids]["id"]
-                resource_id = resource_id.split("/")
-                response = make_request('https://api.models.mint.isi.edu/v1.1.0/variablepresentations/' + resource_id[-1], each["hasPresentation"][0], "PUT", configuration.access_token,{'user': 'dhruvrpa@usc.edu'})
-                if response.status_code == 201 or response.status_code == 200:
-                    print(response.json())
-                    response_data = response.json()
-                    unique_id = PREFIX_URI + response_data["id"]
-
-                    # Adding the unique id to the YAML file
-                    metadata["hasInput"][idx_of_id]["hasPresentation"][p_idx_of_ids]["id"] = unique_id
-
-                    # Writing the new ID to the YAML file
-                    with open(component_dir / "metadata.yaml", "w") as fp:
-                        dump(metadata, fp)
-
-                    dataset_specification["hasPresentation"] = [response_data]
-                    if standard_variable:
+                        dataset_specification["hasPresentation"].append(response_data)
                         dataset_specification["hasPresentation"][0]["hasStandardVariable"] = [standard_variable]
                     else:
-                        dataset_specification["hasPresentation"][0]["hasStandardVariable"] = []
-                else:
-                    #print("Error creating variable presentation for " + dataset_specification["id"])
-                    print(response.status_code)
-                    exit(1)
+                        #print("Error creating variable presentation for " + dataset_specification["id"])
+                        print(response.status_code)
+                        exit(1)
         
         #print(dataset_specification)
         if not main_id_exists:
@@ -605,115 +610,115 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
             dataset_specification["hasFixedResource"] = each["hasFixedResource"]
 
         if "hasPresentation" in each:
-            print("Ok")
-            print(metadata["hasOutput"][idx_of_id]["hasPresentation"])
-            print(each["hasPresentation"])
-            presentation_id_exists, p_idx_of_ids = check_if_id_exists_in_yaml(metadata["hasOutput"][idx_of_id]["hasPresentation"], each["hasPresentation"][0]["label"][0])
-            # Handle the Internal References for hasPresentation like hasStandardVariable and partOfDataset (Doubt regarding how to handle partOfDataset)
-            print(p_idx_of_ids)
-            standard_variable = {}
-            if "hasStandardVariable" in each["hasPresentation"][0]:
-                if isinstance(metadata["hasOutput"][idx_of_id]["hasPresentation"][p_idx_of_ids]["hasStandardVariable"], dict):
-                    metadata["hasOutput"][idx_of_id]["hasPresentation"][p_idx_of_ids]["hasStandardVariable"] = [metadata["hasOutput"][idx_of_id]["hasPresentation"][p_idx_of_ids]["hasStandardVariable"]]
+            dataset_specification["hasPresentation"] = []
+            for present_index, each_presentation in enumerate(each["hasPresentation"]):
 
-                print(metadata["hasOutput"][idx_of_id]["hasPresentation"][p_idx_of_ids]["hasStandardVariable"])
-                standard_variable_id_exists, s_idx_of_ids = check_if_id_exists_in_yaml(metadata["hasOutput"][idx_of_id]["hasPresentation"][p_idx_of_ids]["hasStandardVariable"], each["hasPresentation"][0]["hasStandardVariable"][0]["label"][0])
-                print(s_idx_of_ids)
-                if not standard_variable_id_exists:
-                    print("Standard Variable POST")
-                    response = make_request('https://api.models.mint.isi.edu/v1.1.0/standardvariables', each["hasPresentation"][0]["hasStandardVariable"][0], "POST", configuration.access_token, {'user': 'dhruvrpa@usc.edu'})
+                presentation_id_exists, p_idx_of_ids = check_if_id_exists_in_yaml(metadata["hasOutput"][idx_of_id]["hasPresentation"], each["hasPresentation"][present_index]["label"][0])
+                # Handle the Internal References for hasPresentation like hasStandardVariable and partOfDataset (Doubt regarding how to handle partOfDataset)
+                print(p_idx_of_ids)
+                standard_variable = {}
+                if "hasStandardVariable" in each["hasPresentation"][present_index]:
+                    if isinstance(metadata["hasOutput"][idx_of_id]["hasPresentation"][p_idx_of_ids]["hasStandardVariable"], dict):
+                        metadata["hasOutput"][idx_of_id]["hasPresentation"][p_idx_of_ids]["hasStandardVariable"] = [metadata["hasOutput"][idx_of_id]["hasPresentation"][p_idx_of_ids]["hasStandardVariable"]]
+
+                    print(metadata["hasOutput"][idx_of_id]["hasPresentation"][p_idx_of_ids]["hasStandardVariable"])
+                    standard_variable_id_exists, s_idx_of_ids = check_if_id_exists_in_yaml(metadata["hasOutput"][idx_of_id]["hasPresentation"][p_idx_of_ids]["hasStandardVariable"], each["hasPresentation"][present_index]["hasStandardVariable"][0]["label"][0])
+                    print(s_idx_of_ids)
+                    if not standard_variable_id_exists:
+                        print("Standard Variable POST")
+                        response = make_request('https://api.models.mint.isi.edu/v1.1.0/standardvariables', each["hasPresentation"][present_index]["hasStandardVariable"][0], "POST", configuration.access_token, {'user': 'dhruvrpa@usc.edu'})
+                        if response.status_code == 201 or response.status_code == 200:
+                            print(response.json())
+                            response_data = response.json()
+
+                            unique_id = PREFIX_URI + response_data["id"]
+
+                            # Adding the unique id to the YAML file
+                
+                            metadata["hasOutput"][idx_of_id]["hasPresentation"][p_idx_of_ids]["hasStandardVariable"][s_idx_of_ids]["id"] = unique_id
+
+                            # Writing the new ID to the YAML file
+                            with open(component_dir / "metadata.yaml", "w") as fp:
+                                dump(metadata, fp)
+
+                            standard_variable = response_data
+                        else:
+                            #print("Error creating standard variables for " + dataset_specification["id"])
+                            print(response.status_code)
+                            exit(1)
+                    else:
+                        print("Standard Variable PUT")
+                        resource_id = metadata["hasOutput"][idx_of_id]["hasPresentation"][p_idx_of_ids]["hasStandardVariable"][s_idx_of_ids]["id"]
+                        resource_id = resource_id.split("/")
+                        del each["hasPresentation"][present_index]["hasStandardVariable"][0]["id"]
+                        response = make_request('https://api.models.mint.isi.edu/v1.1.0/standardvariables/' + resource_id[-1], each["hasPresentation"][present_index]["hasStandardVariable"][0], "PUT", configuration.access_token, {'user': 'dhruvrpa@usc.edu'})
+                        if response.status_code == 201 or response.status_code == 200:
+                            print(response.json())
+                            response_data = response.json()
+
+                            unique_id = PREFIX_URI + response_data["id"]
+
+                            # Adding the unique id to the YAML file
+                            metadata["hasOutput"][idx_of_id]["hasPresentation"][p_idx_of_ids]["hasStandardVariable"][s_idx_of_ids]["id"] = unique_id
+
+                            # Writing the new ID to the YAML file
+                            with open(component_dir / "metadata.yaml", "w") as fp:
+                                dump(metadata, fp)
+
+                            standard_variable = response_data
+                        else:
+                            #print("Error creating standard variables for " + dataset_specification["id"])
+                            print(response.status_code)
+                            exit(1)
+            
+                if not presentation_id_exists:
+                    print("Variable Presentation POST")
+                    print(each["hasPresentation"][present_index])
+                    response = make_request('https://api.models.mint.isi.edu/v1.1.0/variablepresentations', each["hasPresentation"][present_index], "POST", configuration.access_token, {'user': 'dhruvrpa@usc.edu'})
                     if response.status_code == 201 or response.status_code == 200:
                         print(response.json())
-                        response_data = response.json()
-
+                        response_data = response.json() 
                         unique_id = PREFIX_URI + response_data["id"]
 
                         # Adding the unique id to the YAML file
-            
-                        metadata["hasOutput"][idx_of_id]["hasPresentation"][p_idx_of_ids]["hasStandardVariable"][s_idx_of_ids]["id"] = unique_id
+                        metadata["hasOutput"][idx_of_id]["hasPresentation"][p_idx_of_ids]["id"] = unique_id
 
                         # Writing the new ID to the YAML file
                         with open(component_dir / "metadata.yaml", "w") as fp:
                             dump(metadata, fp)
 
-                        standard_variable = response_data
+                        dataset_specification["hasPresentation"].append(response_data)
+                        if standard_variable:
+                            dataset_specification["hasPresentation"][0]["hasStandardVariable"] = [standard_variable]
+                        else:
+                            dataset_specification["hasPresentation"][0]["hasStandardVariable"] = []
                     else:
-                        #print("Error creating standard variables for " + dataset_specification["id"])
+                        #print("Error creating variable presentation for " + dataset_specification["id"])
                         print(response.status_code)
                         exit(1)
                 else:
-                    print("Standard Variable PUT")
-                    resource_id = metadata["hasOutput"][idx_of_id]["hasPresentation"][p_idx_of_ids]["hasStandardVariable"][s_idx_of_ids]["id"]
+                    print("Variable Presentation PUT")
+                    resource_id = metadata["hasOutput"][idx_of_id]["hasPresentation"][p_idx_of_ids]["id"]
                     resource_id = resource_id.split("/")
-                    del each["hasPresentation"][0]["hasStandardVariable"][0]["id"]
-                    response = make_request('https://api.models.mint.isi.edu/v1.1.0/standardvariables/' + resource_id[-1], each["hasPresentation"][0]["hasStandardVariable"][0], "PUT", configuration.access_token, {'user': 'dhruvrpa@usc.edu'})
+                    response = make_request('https://api.models.mint.isi.edu/v1.1.0/variablepresentations/' + resource_id[-1], each["hasPresentation"][0], "PUT", configuration.access_token,{'user': 'dhruvrpa@usc.edu'})
                     if response.status_code == 201 or response.status_code == 200:
                         print(response.json())
                         response_data = response.json()
-
                         unique_id = PREFIX_URI + response_data["id"]
 
                         # Adding the unique id to the YAML file
-                        metadata["hasOutput"][idx_of_id]["hasPresentation"][p_idx_of_ids]["hasStandardVariable"][s_idx_of_ids]["id"] = unique_id
+                        metadata["hasOutput"][idx_of_id]["hasPresentation"][p_idx_of_ids]["id"] = unique_id
 
                         # Writing the new ID to the YAML file
                         with open(component_dir / "metadata.yaml", "w") as fp:
                             dump(metadata, fp)
 
-                        standard_variable = response_data
-                    else:
-                        #print("Error creating standard variables for " + dataset_specification["id"])
-                        print(response.status_code)
-                        exit(1)
-            
-            if not presentation_id_exists:
-                print("Variable Presentation POST")
-                print(each["hasPresentation"][0])
-                response = make_request('https://api.models.mint.isi.edu/v1.1.0/variablepresentations', each["hasPresentation"][0], "POST", configuration.access_token, {'user': 'dhruvrpa@usc.edu'})
-                if response.status_code == 201 or response.status_code == 200:
-                    print(response.json())
-                    response_data = response.json() 
-                    unique_id = PREFIX_URI + response_data["id"]
-
-                    # Adding the unique id to the YAML file
-                    metadata["hasOutput"][idx_of_id]["hasPresentation"][p_idx_of_ids]["id"] = unique_id
-
-                    # Writing the new ID to the YAML file
-                    with open(component_dir / "metadata.yaml", "w") as fp:
-                        dump(metadata, fp)
-
-                    dataset_specification["hasPresentation"] = [response_data]
-                    if standard_variable:
+                        dataset_specification["hasPresentation"].append(response_data)
                         dataset_specification["hasPresentation"][0]["hasStandardVariable"] = [standard_variable]
                     else:
-                        dataset_specification["hasPresentation"][0]["hasStandardVariable"] = []
-                else:
-                    #print("Error creating variable presentation for " + dataset_specification["id"])
-                    print(response.status_code)
-                    exit(1)
-            else:
-                print("Variable Presentation PUT")
-                resource_id = metadata["hasOutput"][idx_of_id]["hasPresentation"][p_idx_of_ids]["id"]
-                resource_id = resource_id.split("/")
-                response = make_request('https://api.models.mint.isi.edu/v1.1.0/variablepresentations/' + resource_id[-1], each["hasPresentation"][0], "PUT", configuration.access_token,{'user': 'dhruvrpa@usc.edu'})
-                if response.status_code == 201 or response.status_code == 200:
-                    print(response.json())
-                    response_data = response.json()
-                    unique_id = PREFIX_URI + response_data["id"]
-
-                    # Adding the unique id to the YAML file
-                    metadata["hasOutput"][idx_of_id]["hasPresentation"][p_idx_of_ids]["id"] = unique_id
-
-                    # Writing the new ID to the YAML file
-                    with open(component_dir / "metadata.yaml", "w") as fp:
-                        dump(metadata, fp)
-
-                    dataset_specification["hasPresentation"] = [response_data]
-                    dataset_specification["hasPresentation"][0]["hasStandardVariable"] = [standard_variable]
-                else:
-                    #print("Error creating variable presentation for " + dataset_specification["id"])
-                    print(response.status_code)
-                    exit(1)
+                        #print("Error creating variable presentation for " + dataset_specification["id"])
+                        print(response.status_code)
+                        exit(1)
         
         #print(dataset_specification)
         if not main_id_exists:

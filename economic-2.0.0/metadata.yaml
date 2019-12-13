@@ -161,30 +161,33 @@ hasOutput:
   hasPresentation:
   - description:
     - Econ Eta
-    id: 0556bfac-5b64-4e99-97b5-0e0abb7dc63a
+    id: https://w3id.org/okn/i/mint/0556bfac-5b64-4e99-97b5-0e0abb7dc63a
     label:
     - eta
     type:
     - VariablePresentation
   - description:
     - Econ C2
+    id: https://w3id.org/okn/i/mint/934e7633-94d4-44c9-b3e0-acb99af9e1bd
     label:
     - c2
     type:
     - VariablePresentation
   - description:
     - Econ C1
+    id: https://w3id.org/okn/i/mint/dfb22243-650f-406a-a6cf-b6ddb58018b2
     label:
     - c1
     type:
     - VariablePresentation
   - description:
     - Econ P
+    id: https://w3id.org/okn/i/mint/70233ae2-d702-4dba-acd0-71b0b4cdcae7
     label:
     - p
     type:
     - VariablePresentation
-  id: 78d5f4bc-0304-4b1a-85d0-c52776c5756d
+  id: https://w3id.org/okn/i/mint/78d5f4bc-0304-4b1a-85d0-c52776c5756d
   label:
   - economic-data
   position:
