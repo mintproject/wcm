@@ -181,10 +181,8 @@ def make_request(request_uri, data, request_type, access_token, params):
         return response
     elif request_type == "PUT":
         headers = {"content-type": "application/json", "Authorization": "Bearer " + access_token}
-        print(data)
         try:
             response = requests.put(request_uri, params = json.dumps(params), headers = headers, data = json.dumps(data))
-            print(response.text)
         except Exception as err:
             print(err)
         return response
@@ -228,7 +226,6 @@ def check_if_id_exists_in_yaml(raw_data, label):
 
     matched_idx = -1
     for idx, data in enumerate(raw_data):
-        print(data["label"][0], label)
         if data["label"][0] == label:
             matched_idx = idx
             if "id" in data:
@@ -288,7 +285,6 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
         exit(1)
     
     metadata = spec
-    print(metadata)
 
     input_param = []
     output_param = []
@@ -393,27 +389,14 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
         else:
             print("No metadata found for " + each["label"][0])
             #exit(1)
-    
-    # Loading the data from metadata yaml to the param 
-    for each in param:
-        intr_data = find_and_get_the_data(metadata, each["label"][0], 2)
-        if intr_data:
-            for k,v in intr_data.items():
-                if k != "hasDimensionality" and k != "position" and k != "type":
-                    each[k] = v
-        else:
-            print("No metadata found for " + each["label"][0])
-            #exit(1)
 
-    print("Hello")
-    logging.info(input_param)
     # Create an instance of DatasetSpecificationApi to register the input and output parameters
     # Add input parameter to DatasetSpecification API
     input_param_uri = []
     for each in input_param:
         logging.info(each)
         main_id_exists, idx_of_id = check_if_id_exists_in_yaml(metadata["hasInput"], each["label"][0])
-        print(idx_of_id)
+        #print(idx_of_id)
         dataset_specification = {}
 
         if "hasDimensionality" in each:
@@ -438,14 +421,14 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
         if "hasPresentation" in each:
             presentation_id_exists, p_idx_of_ids = check_if_id_exists_in_yaml(metadata["hasInput"][idx_of_id]["hasPresentation"], each["hasPresentation"][0]["label"][0])
             # Handle the Internal References for hasPresentation like hasStandardVariable and partOfDataset (Doubt regarding how to handle partOfDataset)
-            print(p_idx_of_ids)
+            #print(p_idx_of_ids)
             standard_variable = {}
             if "hasStandardVariable" in each["hasPresentation"][0]:
                 if isinstance(metadata["hasInput"][idx_of_id]["hasPresentation"][p_idx_of_ids]["hasStandardVariable"], dict):
                     metadata["hasInput"][idx_of_id]["hasPresentation"][p_idx_of_ids]["hasStandardVariable"] = [metadata["hasInput"][idx_of_id]["hasPresentation"][p_idx_of_ids]["hasStandardVariable"]]
-                print(metadata["hasInput"][idx_of_id]["hasPresentation"][p_idx_of_ids]["hasStandardVariable"])
+                #print(metadata["hasInput"][idx_of_id]["hasPresentation"][p_idx_of_ids]["hasStandardVariable"])
                 standard_variable_id_exists, s_idx_of_ids = check_if_id_exists_in_yaml(metadata["hasInput"][idx_of_id]["hasPresentation"][p_idx_of_ids]["hasStandardVariable"], each["hasPresentation"][0]["hasStandardVariable"][0]["label"][0])
-                print(s_idx_of_ids)
+                #print(s_idx_of_ids)
                 if not standard_variable_id_exists:
                     print("Standard Variable POST")
                     response = make_request('https://api.models.mint.isi.edu/v1.1.0/standardvariables', each["hasPresentation"][0]["hasStandardVariable"][0], "POST", configuration.access_token, {'user': 'dhruvrpa@usc.edu'})
@@ -532,7 +515,10 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
                         dump(metadata, fp)
 
                     dataset_specification["hasPresentation"] = [response_data]
-                    dataset_specification["hasPresentation"][0]["hasStandardVariable"] = [standard_variable]
+                    if standard_variable:
+                        dataset_specification["hasPresentation"][0]["hasStandardVariable"] = [standard_variable]
+                    else:
+                        dataset_specification["hasPresentation"][0]["hasStandardVariable"] = []
                 else:
                     #print("Error creating variable presentation for " + dataset_specification["id"])
                     print(response.status_code)
@@ -603,27 +589,25 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
             dataset_specification["id"] = each["id"]
 
         if "hasFormat" in each:
-            dataset_specification["hasFormat"] = [each["hasFormat"]]
+            dataset_specification["hasFormat"] = each["hasFormat"]
         
         if "hasFileStructure" in each:
             dataset_specification["hasFileStructure"] = each["hasFileStructure"]
 
         if "description" in each:
-            dataset_specification["descripition"] = [each["description"]]
+            dataset_specification["descripition"] = each["description"]
 
-        # What does position map to in wings yaml file
-        """
-        if "position" in each:
-            dataset_specification["position"] = [each["position"]]
-        """
 
         if "type" in each:
-            dataset_specification["type"] = [each["type"]]
+            dataset_specification["type"] = each["type"]
         
         if "hasFixedResource" in each:
             dataset_specification["hasFixedResource"] = each["hasFixedResource"]
 
         if "hasPresentation" in each:
+            print("Ok")
+            print(metadata["hasOutput"][idx_of_id]["hasPresentation"])
+            print(each["hasPresentation"])
             presentation_id_exists, p_idx_of_ids = check_if_id_exists_in_yaml(metadata["hasOutput"][idx_of_id]["hasPresentation"], each["hasPresentation"][0]["label"][0])
             # Handle the Internal References for hasPresentation like hasStandardVariable and partOfDataset (Doubt regarding how to handle partOfDataset)
             print(p_idx_of_ids)
@@ -684,6 +668,7 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
             
             if not presentation_id_exists:
                 print("Variable Presentation POST")
+                print(each["hasPresentation"][0])
                 response = make_request('https://api.models.mint.isi.edu/v1.1.0/variablepresentations', each["hasPresentation"][0], "POST", configuration.access_token, {'user': 'dhruvrpa@usc.edu'})
                 if response.status_code == 201 or response.status_code == 200:
                     print(response.json())
@@ -698,7 +683,10 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
                         dump(metadata, fp)
 
                     dataset_specification["hasPresentation"] = [response_data]
-                    dataset_specification["hasPresentation"][0]["hasStandardVariable"] = [standard_variable]
+                    if standard_variable:
+                        dataset_specification["hasPresentation"][0]["hasStandardVariable"] = [standard_variable]
+                    else:
+                        dataset_specification["hasPresentation"][0]["hasStandardVariable"] = []
                 else:
                     #print("Error creating variable presentation for " + dataset_specification["id"])
                     print(response.status_code)
@@ -747,7 +735,7 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
                 with open(component_dir / "metadata.yaml", "w") as fp:
                     dump(metadata, fp)
 
-                input_param_uri.append({"id": unique_id, "type": [ WINGS_EXPORT_URI +  tp[0], tp[1]]})
+                output_param_uri.append({"id": unique_id, "type": [ WINGS_EXPORT_URI +  tp[0], tp[1]]})
             else:
                 #print("Error creating an input paramater " + dataset_specification["id"])
                 print(response.status_code)
@@ -772,7 +760,7 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
                 with open(component_dir / "metadata.yaml", "w") as fp:
                     dump(metadata, fp)
 
-                input_param_uri.append({"id": unique_id})
+                output_param_uri.append({"id": unique_id})
             else:
                 print("Error creating an input paramater " + dataset_specification["id"])
                 print(response.status_code)

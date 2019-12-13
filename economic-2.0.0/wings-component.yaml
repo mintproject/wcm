@@ -13,7 +13,17 @@ wings:
     isParam: false
     type: dcdom:economic-land-input
     dimensionality: 0
-  outputs: []
+  outputs:
+  - role: crop-yield
+    prefix: -i1
+    isParam: false
+    type: dcdom:economic-cycles-data
+    dimensionality: 0
+  - role: economic-data
+    prefix: -i2
+    isParam: false
+    type: dcdom:economic-land-input
+    dimensionality: 0
   rules: []
   inheritedRules: []
   documentation: Economic Model

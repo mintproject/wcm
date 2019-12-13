@@ -89,13 +89,13 @@ hasInput:
     hasShortName:
     - c1
     hasStandardVariable:
-    - id: b6cba1e6-0b7e-43a8-bea8-d1f791273052
+    - id: https://w3id.org/okn/i/mint/b6cba1e6-0b7e-43a8-bea8-d1f791273052
       label:
       - land_crop__production_cost-per-area
       type:
       - http://www.geoscienceontology.org/svo/svu#Variable
       - http://www.w3.org/2002/07/owl#NamedIndividual
-    id: 6331f6b5-9da8-4e38-aeae-da4bc02015da
+    id: https://w3id.org/okn/i/mint/6331f6b5-9da8-4e38-aeae-da4bc02015da
     label:
     - c1
     type:
@@ -105,7 +105,7 @@ hasInput:
       label:
       - USD ha-1
       type: http://qudt.org/1.1/schema/qudt#Unit
-  id: 41885934-5187-4f86-bbf2-32bc3da6302b
+  id: https://w3id.org/okn/i/mint/41885934-5187-4f86-bbf2-32bc3da6302b
   label:
   - economic-sim
   position:
@@ -119,7 +119,7 @@ hasInput:
   - 0
   hasFormat:
   - txt
-  id: f4815fd5-3eef-4e51-80be-5db2ae50cfd1
+  id: https://w3id.org/okn/i/mint/f4815fd5-3eef-4e51-80be-5db2ae50cfd1
   label:
   - economic-subsidies
   position:
@@ -127,6 +127,9 @@ hasInput:
   type:
   - https://w3id.org/wings/export/MINT#EconomicSubsidies
   - DatasetSpecification
+hasModelCategory:
+- Economy
+hasOutput:
 - description:
   - Contains the yield elasticities to fertilizer use that are derived from Cycles
     output
@@ -135,12 +138,12 @@ hasInput:
   hasFormat:
   - csv
   hasPresentation:
-  - id: https://w3id.org/okn/i/mint/econ_ybarN
+  - id: https://w3id.org/okn/i/mint/085f891c-5634-42c1-aad5-c06077e11de2
     label:
     - ybarN
     type:
     - VariablePresentation
-  id: https://w3id.org/okn/i/mint/econ_v2_yield
+  id: https://w3id.org/okn/i/mint/6f06ebc7-caf4-4191-95c2-8727beb2d5b5
   label:
   - crop-yield
   position:
@@ -149,37 +152,6 @@ hasInput:
   - https://w3id.org/wings/export/MINT#CropYield
   - DatasetSpecification
 - description:
-  - Contains data on land planted to each crop and fertilizer use and observed yields.
-    These data are used to calibrate the production function in the model.
-  hasDimensionality:
-  - 0
-  hasFormat:
-  - csv
-  hasPresentation:
-  - id: https://w3id.org/okn/i/mint/econ_xbar1
-    label:
-    - xbar1
-    type:
-    - VariablePresentation
-  - id: https://w3id.org/okn/i/mint/econ_xbar2
-    label:
-    - xbar2
-    type:
-    - VariablePresentation
-  - id: https://w3id.org/okn/i/mint/econ_ybar
-    label:
-    - ybar
-    type:
-    - VariablePresentation
-  id: https://w3id.org/okn/i/mint/econ_v2_calib
-  label:
-  - economic-calib
-  position:
-  - 2
-  type:
-  - DatasetSpecification
-  - https://w3id.org/wings/export/MINT#EconomicCalibData
-- description:
   - Contains data on observed prices for each crop and supply elasticities and the
     costs of production for each crop
   hasDimensionality:
@@ -187,27 +159,32 @@ hasInput:
   hasFormat:
   - csv
   hasPresentation:
-  - id: https://w3id.org/okn/i/mint/econ_eta
+  - description:
+    - Econ Eta
+    id: 0556bfac-5b64-4e99-97b5-0e0abb7dc63a
     label:
     - eta
     type:
     - VariablePresentation
-  - id: https://w3id.org/okn/i/mint/econ_c2
+  - description:
+    - Econ C2
     label:
     - c2
     type:
     - VariablePresentation
-  - id: https://w3id.org/okn/i/mint/econ_c1
+  - description:
+    - Econ C1
     label:
     - c1
     type:
     - VariablePresentation
-  - id: https://w3id.org/okn/i/mint/econ_p
+  - description:
+    - Econ P
     label:
     - p
     type:
     - VariablePresentation
-  id: https://w3id.org/okn/i/mint/econ_v2_data
+  id: 78d5f4bc-0304-4b1a-85d0-c52776c5756d
   label:
   - economic-data
   position:
@@ -215,13 +192,6 @@ hasInput:
   type:
   - DatasetSpecification
   - https://w3id.org/wings/export/MINT#EconomicData
-hasModelCategory:
-- Economy
-hasOutput:
-- id: https://w3id.org/okn/i/mint/econ_v2_land_use
-  type:
-  - https://w3id.org/wings/export/MINT#EconomicLandUse
-  - DatasetSpecification
 hasOutputTimeInterval:
 - description:
   - Time interval used in the aggregate crop supply response model for the country
