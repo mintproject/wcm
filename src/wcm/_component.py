@@ -34,6 +34,7 @@ __DEFAULT_MINT_API_CREDENTIALS_FILE__ = "~/.mint_api/credentials"
 
 PREFIX_URI = ""
 WINGS_EXPORT_URI = "https://w3id.org/wings/export/"
+BASE_URL = "https://api.models.mint.isi.edu/v1.2.0"
 
 @contextmanager
 def _cli(**kw):
@@ -435,7 +436,7 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
                     print(s_idx_of_ids)
                     if not standard_variable_id_exists:
                         print("Standard Variable POST")
-                        response = make_request('https://api.models.mint.isi.edu/v1.1.0/standardvariables', each["hasPresentation"][present_index]["hasStandardVariable"][0], "POST", configuration.access_token, {'user': 'dhruvrpa@usc.edu'})
+                        response = make_request( BASE_URL + '/standardvariables', each["hasPresentation"][present_index]["hasStandardVariable"][0], "POST", configuration.access_token, {'user': 'dhruvrpa@usc.edu'})
                         if response.status_code == 201 or response.status_code == 200:
                             print(response.json())
                             response_data = response.json()
@@ -460,7 +461,7 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
                         resource_id = metadata["hasInput"][idx_of_id]["hasPresentation"][p_idx_of_ids]["hasStandardVariable"][s_idx_of_ids]["id"]
                         resource_id = resource_id.split("/")
                         del each["hasPresentation"][present_index]["hasStandardVariable"][0]["id"]
-                        response = make_request('https://api.models.mint.isi.edu/v1.1.0/standardvariables/' + resource_id[-1], each["hasPresentation"][present_index]["hasStandardVariable"][0], "PUT", configuration.access_token, {'user': 'dhruvrpa@usc.edu'})
+                        response = make_request( BASE_URL + '/standardvariables/' + resource_id[-1], each["hasPresentation"][present_index]["hasStandardVariable"][0], "PUT", configuration.access_token, {'user': 'dhruvrpa@usc.edu'})
                         if response.status_code == 201 or response.status_code == 200:
                             print(response.json())
                             response_data = response.json()
@@ -483,7 +484,7 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
                 if not presentation_id_exists:
                     print("Variable Presentation POST")
                     print(each["hasPresentation"][present_index])
-                    response = make_request('https://api.models.mint.isi.edu/v1.1.0/variablepresentations', each["hasPresentation"][present_index], "POST", configuration.access_token, {'user': 'dhruvrpa@usc.edu'})
+                    response = make_request( BASE_URL + '/variablepresentations', each["hasPresentation"][present_index], "POST", configuration.access_token, {'user': 'dhruvrpa@usc.edu'})
                     if response.status_code == 201 or response.status_code == 200:
                         print(response.json())
                         response_data = response.json() 
@@ -509,7 +510,7 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
                     print("Variable Presentation PUT")
                     resource_id = metadata["hasInput"][idx_of_id]["hasPresentation"][p_idx_of_ids]["id"]
                     resource_id = resource_id.split("/")
-                    response = make_request('https://api.models.mint.isi.edu/v1.1.0/variablepresentations/' + resource_id[-1], each["hasPresentation"][0], "PUT", configuration.access_token,{'user': 'dhruvrpa@usc.edu'})
+                    response = make_request( BASE_URL + '/variablepresentations/' + resource_id[-1], each["hasPresentation"][0], "PUT", configuration.access_token,{'user': 'dhruvrpa@usc.edu'})
                     if response.status_code == 201 or response.status_code == 200:
                         print(response.json())
                         response_data = response.json()
@@ -535,7 +536,7 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
             print(dataset_specification)
 
             #print("POST Request performed for " + each)
-            response = make_request('https://api.models.mint.isi.edu/v1.1.0/datasetspecifications', dataset_specification, "POST", configuration.access_token, {'user': 'dhruvrpa@usc.edu'})
+            response = make_request( BASE_URL + '/datasetspecifications', dataset_specification, "POST", configuration.access_token, {'user': 'dhruvrpa@usc.edu'})
             if response.status_code == 201 or response.status_code == 200:
                 print(response.json())
                 response_data = response.json()
@@ -560,7 +561,7 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
             #print("PUT Request performed for " + each)
             resource_id = metadata["hasInput"][idx_of_id]["id"]
             resource_id = resource_id.split("/")
-            response = make_request('https://api.models.mint.isi.edu/v1.1.0/datasetspecifications/' + resource_id[-1], dataset_specification, "PUT", configuration.access_token, {'user': 'dhruvrpa@usc.edu'})
+            response = make_request( BASE_URL + '/datasetspecifications/' + resource_id[-1], dataset_specification, "PUT", configuration.access_token, {'user': 'dhruvrpa@usc.edu'})
             if response.status_code == 201 or response.status_code == 200:
                 print(response.json())
                 response_data = response.json()
@@ -626,7 +627,7 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
                     print(s_idx_of_ids)
                     if not standard_variable_id_exists:
                         print("Standard Variable POST")
-                        response = make_request('https://api.models.mint.isi.edu/v1.1.0/standardvariables', each["hasPresentation"][present_index]["hasStandardVariable"][0], "POST", configuration.access_token, {'user': 'dhruvrpa@usc.edu'})
+                        response = make_request( BASE_URL + '/standardvariables', each["hasPresentation"][present_index]["hasStandardVariable"][0], "POST", configuration.access_token, {'user': 'dhruvrpa@usc.edu'})
                         if response.status_code == 201 or response.status_code == 200:
                             print(response.json())
                             response_data = response.json()
@@ -651,7 +652,7 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
                         resource_id = metadata["hasOutput"][idx_of_id]["hasPresentation"][p_idx_of_ids]["hasStandardVariable"][s_idx_of_ids]["id"]
                         resource_id = resource_id.split("/")
                         del each["hasPresentation"][present_index]["hasStandardVariable"][0]["id"]
-                        response = make_request('https://api.models.mint.isi.edu/v1.1.0/standardvariables/' + resource_id[-1], each["hasPresentation"][present_index]["hasStandardVariable"][0], "PUT", configuration.access_token, {'user': 'dhruvrpa@usc.edu'})
+                        response = make_request( BASE_URL + '/standardvariables/' + resource_id[-1], each["hasPresentation"][present_index]["hasStandardVariable"][0], "PUT", configuration.access_token, {'user': 'dhruvrpa@usc.edu'})
                         if response.status_code == 201 or response.status_code == 200:
                             print(response.json())
                             response_data = response.json()
@@ -674,7 +675,7 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
                 if not presentation_id_exists:
                     print("Variable Presentation POST")
                     print(each["hasPresentation"][present_index])
-                    response = make_request('https://api.models.mint.isi.edu/v1.1.0/variablepresentations', each["hasPresentation"][present_index], "POST", configuration.access_token, {'user': 'dhruvrpa@usc.edu'})
+                    response = make_request( BASE_URL + '/variablepresentations', each["hasPresentation"][present_index], "POST", configuration.access_token, {'user': 'dhruvrpa@usc.edu'})
                     if response.status_code == 201 or response.status_code == 200:
                         print(response.json())
                         response_data = response.json() 
@@ -700,7 +701,7 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
                     print("Variable Presentation PUT")
                     resource_id = metadata["hasOutput"][idx_of_id]["hasPresentation"][p_idx_of_ids]["id"]
                     resource_id = resource_id.split("/")
-                    response = make_request('https://api.models.mint.isi.edu/v1.1.0/variablepresentations/' + resource_id[-1], each["hasPresentation"][0], "PUT", configuration.access_token,{'user': 'dhruvrpa@usc.edu'})
+                    response = make_request( BASE_URL + '/variablepresentations/' + resource_id[-1], each["hasPresentation"][0], "PUT", configuration.access_token,{'user': 'dhruvrpa@usc.edu'})
                     if response.status_code == 201 or response.status_code == 200:
                         print(response.json())
                         response_data = response.json()
@@ -726,7 +727,7 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
             print(dataset_specification)
 
             #print("POST Request performed for " + each)
-            response = make_request('https://api.models.mint.isi.edu/v1.1.0/datasetspecifications', dataset_specification, "POST", configuration.access_token, {'user': 'dhruvrpa@usc.edu'})
+            response = make_request( BASE_URL + '/datasetspecifications', dataset_specification, "POST", configuration.access_token, {'user': 'dhruvrpa@usc.edu'})
             if response.status_code == 201 or response.status_code == 200:
                 print(response.json())
                 response_data = response.json()
@@ -751,7 +752,7 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
             #print("PUT Request performed for " + each)
             resource_id = metadata["hasOutput"][idx_of_id]["id"]
             resource_id = resource_id.split("/")
-            response = make_request('https://api.models.mint.isi.edu/v1.1.0/datasetspecifications/' + resource_id[-1], dataset_specification, "PUT", configuration.access_token, {'user': 'dhruvrpa@usc.edu'})
+            response = make_request( BASE_URL + '/datasetspecifications/' + resource_id[-1], dataset_specification, "PUT", configuration.access_token, {'user': 'dhruvrpa@usc.edu'})
             if response.status_code == 201 or response.status_code == 200:
                 print(response.json())
                 response_data = response.json()
@@ -803,7 +804,7 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
             # Handle the Internal References for hasPresentation like hasStandardVariable and partOfDataset (Doubt regarding how to handle partOfDataset)
             standard_variable = {}
             if "hasStandardVariable" in each["hasPresentation"]:
-                response = make_request('https://api.models.mint.isi.edu/v1.1.0/standardvariables?user=' + username, each["hasPresentation"]["hasStandardVariable"], "POST", configuration.access_token)
+                response = make_request( BASE_URL + '/standardvariables' + username, each["hasPresentation"]["hasStandardVariable"], "POST", configuration.access_token, {'user': 'dhruvrpa@usc.edu'})
                 if response.status_code == 201 or response.status_code == 200:
                     print(response.json())
                     response_data = response.json()
@@ -813,7 +814,7 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
                     print(response.status_code)
                     exit(1)
             
-            response = make_request('https://api.models.mint.isi.edu/v1.1.0/variablepresentations?user=' + username, each["hasPresentation"], "POST", configuration.access_token)
+            response = make_request( BASE_URL + '/variablepresentations' + username, each["hasPresentation"], "POST", configuration.access_token, {'user': 'dhruvrpa@usc.edu'})
             if response.status_code == 201 or response.status_code == 200:
                 print(response.json())
                 response_data = response.json()
@@ -861,7 +862,7 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
             parameter.uses_unit = []
         """
 
-        response = make_request('https://api.models.mint.isi.edu/v1.1.0/parameters?user=' + username, parameter, "POST", configuration.access_token)
+        response = make_request( BASE_URL + '/parameters' + username, parameter, "POST", configuration.access_token, {'user': 'dhruvrpa@usc.edu'})
         if response.status_code == 201 or response.status_code == 200:
             print("Created a parameter " + parameter["id"])
             print(response.json())
@@ -894,7 +895,7 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
     model_configuration["hasVersion"] = [{'id':model_data['name'] + '_' + model_data['version']}]
 
     if "id" not in metadata:
-        response = make_request('https://api.models.mint.isi.edu/v1.1.0/modelconfigurations', model_configuration, "POST", configuration.access_token, {'user': 'dhruvrpa@usc.edu'})
+        response = make_request( BASE_URL + '/modelconfigurations', model_configuration, "POST", configuration.access_token, {'user': 'dhruvrpa@usc.edu'})
         if response.status_code == 201 or response.status_code == 200:
             print("Created a Model Configuration " + response.json()["id"])
             print(response.json())
@@ -914,7 +915,7 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
     else:
         resource_id = metadata["id"]
         resource_id = resource_id.split("/")
-        response = make_request('https://api.models.mint.isi.edu/v1.1.0/modelconfigurations/'+ resource_id[-1], model_configuration, "PUT", configuration.access_token, {'user': 'dhruvrpa@usc.edu'})
+        response = make_request( BASE_URL + '/modelconfigurations/'+ resource_id[-1], model_configuration, "PUT", configuration.access_token, {'user': 'dhruvrpa@usc.edu'})
         if response.status_code == 201 or response.status_code == 200:
             print("Created a Model Configuration " + response.json()["id"])
             print(response.json())
