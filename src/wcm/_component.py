@@ -35,6 +35,7 @@ __DEFAULT_MINT_API_CREDENTIALS_FILE__ = "~/.mint_api/credentials"
 PREFIX_URI = ""
 WINGS_EXPORT_URI = "https://w3id.org/wings/export/"
 BASE_URL = "https://api.models.mint.isi.edu/v1.2.0"
+PREFIX_UR="https://w3id.org/okn/i/mint/"
 
 @contextmanager
 def _cli(**kw):
@@ -874,6 +875,65 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
             print(response.status_code)
             exit(1)
 
+
+    # Registering the SourceCode through the SourceCodeAPI
+    source_code_uri = []
+    iter=0
+    for each in metadata["hasSourceCode"]:
+        source_code = {}
+
+        if "codeRepository" in each:
+            source_code["codeRepository"] = each["codeRepository"]
+
+        if "description" in each:
+            source_code["description"] = each["description"]
+
+        if "id" in each:
+            source_code["id"] = each["id"]
+
+        if "label" in each:
+            source_code["label"]=each["label"]
+
+        if "programmingLanguage" in each:
+            source_code["programmingLanguage"]=each["programmingLanguage"]
+
+        if "type" in each:
+            source_code["type"] = each["type"]
+        print (source_code)
+        if "id" not in source_code:
+            response = make_request( BASE_URL + '/sourcecodes', source_code, "POST", configuration.access_token, {'user': 'dhruvrpa@usc.edu'})
+            if response.status_code == 201 or response.status_code == 200:
+                print(response.json())
+                response_data = response.json()
+                print("Created a source_code " + response_data["id"])
+                unique_id = PREFIX_UR + response_data["id"]
+                source_code_uri.append({"id": unique_id, "type": response_data["type"]})
+                 # Adding the unique id to the YAML file
+                metadata["hasSourceCode"][iter]["id"] = unique_id
+
+                # Writing the new ID to the YAML file
+                with open(component_dir / "metadata.yaml", "w") as fp:
+                    dump(metadata, fp)
+            else:
+                print("Error creating a source_code " + source_code["id"])
+                print(response.status_code)
+                print(response)
+                exit(1)
+        else:
+            resource_id = source_code["id"].split("/")
+            response = make_request( BASE_URL + '/sourcecodes/' + resource_id[-1], source_code, "PUT", configuration.access_token, {'user': 'dhruvrpa@usc.edu'})
+            if response.status_code == 201 or response.status_code == 200:
+                print(response.json())
+                response_data = response.json()
+                unique_id = PREFIX_URI + response_data["id"]
+                tp = response_data["type"]
+                source_code_uri.append({"id": unique_id, "type": response_data["type"]})
+            else:
+                print("Error creating an source_code " + dataset_specification["id"])
+                print(response.status_code)
+                exit(1)
+        iter+=1
+
     # Create a model configuration
     model_configuration = {}
     if "name" in model_data:
@@ -882,6 +942,7 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
     model_configuration['hasInput'] = input_param_uri
     model_configuration['hasOutput'] = output_param_uri
     model_configuration['hasParameter'] = parameter_uri
+    model_configuration['hasSourceCode'] = source_code_uri
 
     if "contributor" in model_data:
         model_configuration["hasContributors"] = model_data["contributors"]
