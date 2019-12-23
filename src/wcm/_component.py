@@ -20,8 +20,7 @@ from pprint import pprint
 import json
 import ast
 
-
-from wcm import _schema, _utils, _metadata_schema
+from wcm import _schema, _utils, _metadata_schema, _has_region, _has_source_code
 import requests
 
 try:
@@ -32,10 +31,9 @@ except ImportError:
 log = logging.getLogger()
 __DEFAULT_MINT_API_CREDENTIALS_FILE__ = "~/.mint_api/credentials"
 
-PREFIX_URI = ""
+PREFIX_URI = "https://w3id.org/okn/i/mint/"
 WINGS_EXPORT_URI = "https://w3id.org/wings/export/"
 BASE_URL = "https://api.models.mint.isi.edu/v1.2.0"
-PREFIX_UR="https://w3id.org/okn/i/mint/"
 
 @contextmanager
 def _cli(**kw):
@@ -287,6 +285,7 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
         exit(1)
     
     metadata = spec
+    print(metadata)
 
     input_param = []
     output_param = []
@@ -437,7 +436,7 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
                     print(s_idx_of_ids)
                     if not standard_variable_id_exists:
                         print("Standard Variable POST")
-                        response = make_request( BASE_URL + '/standardvariables', each["hasPresentation"][present_index]["hasStandardVariable"][0], "POST", configuration.access_token, {'user': 'dhruvrpa@usc.edu'})
+                        response = make_request( BASE_URL + '/standardvariables', each["hasPresentation"][present_index]["hasStandardVariable"][0], "POST", configuration.access_token, {'user': username})
                         if response.status_code == 201 or response.status_code == 200:
                             print(response.json())
                             response_data = response.json()
@@ -462,19 +461,10 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
                         resource_id = metadata["hasInput"][idx_of_id]["hasPresentation"][p_idx_of_ids]["hasStandardVariable"][s_idx_of_ids]["id"]
                         resource_id = resource_id.split("/")
                         del each["hasPresentation"][present_index]["hasStandardVariable"][0]["id"]
-                        response = make_request( BASE_URL + '/standardvariables/' + resource_id[-1], each["hasPresentation"][present_index]["hasStandardVariable"][0], "PUT", configuration.access_token, {'user': 'dhruvrpa@usc.edu'})
+                        response = make_request( BASE_URL + '/standardvariables/' + resource_id[-1], each["hasPresentation"][present_index]["hasStandardVariable"][0], "PUT", configuration.access_token, {'user': username})
                         if response.status_code == 201 or response.status_code == 200:
                             print(response.json())
                             response_data = response.json()
-
-                            unique_id = PREFIX_URI + response_data["id"]
-
-                            # Adding the unique id to the YAML file
-                            metadata["hasInput"][idx_of_id]["hasPresentation"][p_idx_of_ids]["hasStandardVariable"][s_idx_of_ids]["id"] = unique_id
-
-                            # Writing the new ID to the YAML file
-                            with open(component_dir / "metadata.yaml", "w") as fp:
-                                dump(metadata, fp)
 
                             standard_variable = response_data
                         else:
@@ -485,7 +475,7 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
                 if not presentation_id_exists:
                     print("Variable Presentation POST")
                     print(each["hasPresentation"][present_index])
-                    response = make_request( BASE_URL + '/variablepresentations', each["hasPresentation"][present_index], "POST", configuration.access_token, {'user': 'dhruvrpa@usc.edu'})
+                    response = make_request( BASE_URL + '/variablepresentations', each["hasPresentation"][present_index], "POST", configuration.access_token, {'user': username})
                     if response.status_code == 201 or response.status_code == 200:
                         print(response.json())
                         response_data = response.json() 
@@ -511,18 +501,10 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
                     print("Variable Presentation PUT")
                     resource_id = metadata["hasInput"][idx_of_id]["hasPresentation"][p_idx_of_ids]["id"]
                     resource_id = resource_id.split("/")
-                    response = make_request( BASE_URL + '/variablepresentations/' + resource_id[-1], each["hasPresentation"][0], "PUT", configuration.access_token,{'user': 'dhruvrpa@usc.edu'})
+                    response = make_request( BASE_URL + '/variablepresentations/' + resource_id[-1], each["hasPresentation"][0], "PUT", configuration.access_token,{'user': username})
                     if response.status_code == 201 or response.status_code == 200:
                         print(response.json())
                         response_data = response.json()
-                        unique_id = PREFIX_URI + response_data["id"]
-
-                        # Adding the unique id to the YAML file
-                        metadata["hasInput"][idx_of_id]["hasPresentation"][p_idx_of_ids]["id"] = unique_id
-
-                        # Writing the new ID to the YAML file
-                        with open(component_dir / "metadata.yaml", "w") as fp:
-                            dump(metadata, fp)
 
                         dataset_specification["hasPresentation"].append(response_data)
                         dataset_specification["hasPresentation"][0]["hasStandardVariable"] = [standard_variable]
@@ -537,7 +519,7 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
             print(dataset_specification)
 
             #print("POST Request performed for " + each)
-            response = make_request( BASE_URL + '/datasetspecifications', dataset_specification, "POST", configuration.access_token, {'user': 'dhruvrpa@usc.edu'})
+            response = make_request( BASE_URL + '/datasetspecifications', dataset_specification, "POST", configuration.access_token, {'user': username})
             if response.status_code == 201 or response.status_code == 200:
                 print(response.json())
                 response_data = response.json()
@@ -562,21 +544,16 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
             #print("PUT Request performed for " + each)
             resource_id = metadata["hasInput"][idx_of_id]["id"]
             resource_id = resource_id.split("/")
-            response = make_request( BASE_URL + '/datasetspecifications/' + resource_id[-1], dataset_specification, "PUT", configuration.access_token, {'user': 'dhruvrpa@usc.edu'})
+            response = make_request( BASE_URL + '/datasetspecifications/' + resource_id[-1], dataset_specification, "PUT", configuration.access_token, {'user': username})
             if response.status_code == 201 or response.status_code == 200:
                 print(response.json())
                 response_data = response.json()
                 unique_id = PREFIX_URI + response_data["id"]
-                tp = response_data["type"]
-                
-                # Adding the unique id to the YAML file
-                metadata["hasInput"][idx_of_id]["id"] = unique_id
-
-                # Writing the new ID to the YAML file
-                with open(component_dir / "metadata.yaml", "w") as fp:
-                    dump(metadata, fp)
-
-                input_param_uri.append({"id": unique_id})
+                if "type" in response_data:
+                    tp = response_data["type"]
+                    input_param_uri.append({"id": unique_id, "type": tp})
+                else:
+                    input_param_uri.append({"id": unique_id})
             else:
                 print("Error creating an input paramater " + dataset_specification["id"])
                 print(response.status_code)
@@ -628,7 +605,7 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
                     print(s_idx_of_ids)
                     if not standard_variable_id_exists:
                         print("Standard Variable POST")
-                        response = make_request( BASE_URL + '/standardvariables', each["hasPresentation"][present_index]["hasStandardVariable"][0], "POST", configuration.access_token, {'user': 'dhruvrpa@usc.edu'})
+                        response = make_request( BASE_URL + '/standardvariables', each["hasPresentation"][present_index]["hasStandardVariable"][0], "POST", configuration.access_token, {'user': username})
                         if response.status_code == 201 or response.status_code == 200:
                             print(response.json())
                             response_data = response.json()
@@ -653,19 +630,10 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
                         resource_id = metadata["hasOutput"][idx_of_id]["hasPresentation"][p_idx_of_ids]["hasStandardVariable"][s_idx_of_ids]["id"]
                         resource_id = resource_id.split("/")
                         del each["hasPresentation"][present_index]["hasStandardVariable"][0]["id"]
-                        response = make_request( BASE_URL + '/standardvariables/' + resource_id[-1], each["hasPresentation"][present_index]["hasStandardVariable"][0], "PUT", configuration.access_token, {'user': 'dhruvrpa@usc.edu'})
+                        response = make_request( BASE_URL + '/standardvariables/' + resource_id[-1], each["hasPresentation"][present_index]["hasStandardVariable"][0], "PUT", configuration.access_token, {'user': username})
                         if response.status_code == 201 or response.status_code == 200:
                             print(response.json())
                             response_data = response.json()
-
-                            unique_id = PREFIX_URI + response_data["id"]
-
-                            # Adding the unique id to the YAML file
-                            metadata["hasOutput"][idx_of_id]["hasPresentation"][p_idx_of_ids]["hasStandardVariable"][s_idx_of_ids]["id"] = unique_id
-
-                            # Writing the new ID to the YAML file
-                            with open(component_dir / "metadata.yaml", "w") as fp:
-                                dump(metadata, fp)
 
                             standard_variable = response_data
                         else:
@@ -676,7 +644,7 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
                 if not presentation_id_exists:
                     print("Variable Presentation POST")
                     print(each["hasPresentation"][present_index])
-                    response = make_request( BASE_URL + '/variablepresentations', each["hasPresentation"][present_index], "POST", configuration.access_token, {'user': 'dhruvrpa@usc.edu'})
+                    response = make_request( BASE_URL + '/variablepresentations', each["hasPresentation"][present_index], "POST", configuration.access_token, {'user': username})
                     if response.status_code == 201 or response.status_code == 200:
                         print(response.json())
                         response_data = response.json() 
@@ -702,18 +670,10 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
                     print("Variable Presentation PUT")
                     resource_id = metadata["hasOutput"][idx_of_id]["hasPresentation"][p_idx_of_ids]["id"]
                     resource_id = resource_id.split("/")
-                    response = make_request( BASE_URL + '/variablepresentations/' + resource_id[-1], each["hasPresentation"][0], "PUT", configuration.access_token,{'user': 'dhruvrpa@usc.edu'})
+                    response = make_request( BASE_URL + '/variablepresentations/' + resource_id[-1], each["hasPresentation"][0], "PUT", configuration.access_token,{'user': username})
                     if response.status_code == 201 or response.status_code == 200:
                         print(response.json())
                         response_data = response.json()
-                        unique_id = PREFIX_URI + response_data["id"]
-
-                        # Adding the unique id to the YAML file
-                        metadata["hasOutput"][idx_of_id]["hasPresentation"][p_idx_of_ids]["id"] = unique_id
-
-                        # Writing the new ID to the YAML file
-                        with open(component_dir / "metadata.yaml", "w") as fp:
-                            dump(metadata, fp)
 
                         dataset_specification["hasPresentation"].append(response_data)
                         dataset_specification["hasPresentation"][0]["hasStandardVariable"] = [standard_variable]
@@ -728,7 +688,7 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
             print(dataset_specification)
 
             #print("POST Request performed for " + each)
-            response = make_request( BASE_URL + '/datasetspecifications', dataset_specification, "POST", configuration.access_token, {'user': 'dhruvrpa@usc.edu'})
+            response = make_request( BASE_URL + '/datasetspecifications', dataset_specification, "POST", configuration.access_token, {'user': username})
             if response.status_code == 201 or response.status_code == 200:
                 print(response.json())
                 response_data = response.json()
@@ -753,21 +713,17 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
             #print("PUT Request performed for " + each)
             resource_id = metadata["hasOutput"][idx_of_id]["id"]
             resource_id = resource_id.split("/")
-            response = make_request( BASE_URL + '/datasetspecifications/' + resource_id[-1], dataset_specification, "PUT", configuration.access_token, {'user': 'dhruvrpa@usc.edu'})
+            response = make_request( BASE_URL + '/datasetspecifications/' + resource_id[-1], dataset_specification, "PUT", configuration.access_token, {'user': username})
             if response.status_code == 201 or response.status_code == 200:
                 print(response.json())
                 response_data = response.json()
                 unique_id = PREFIX_URI + response_data["id"]
-                tp = response_data["type"]
-                
-                # Adding the unique id to the YAML file
-                metadata["hasOutput"][idx_of_id]["id"] = unique_id
+                if "type" in response_data:
+                    tp = response_data["type"]
+                    output_param_uri.append({"id": unique_id, "type": tp})
+                else:
+                    output_param_uri.append({"id": unique_id})
 
-                # Writing the new ID to the YAML file
-                with open(component_dir / "metadata.yaml", "w") as fp:
-                    dump(metadata, fp)
-
-                output_param_uri.append({"id": unique_id})
             else:
                 print("Error creating an input paramater " + dataset_specification["id"])
                 print(response.status_code)
@@ -805,7 +761,7 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
             # Handle the Internal References for hasPresentation like hasStandardVariable and partOfDataset (Doubt regarding how to handle partOfDataset)
             standard_variable = {}
             if "hasStandardVariable" in each["hasPresentation"]:
-                response = make_request( BASE_URL + '/standardvariables' + username, each["hasPresentation"]["hasStandardVariable"], "POST", configuration.access_token, {'user': 'dhruvrpa@usc.edu'})
+                response = make_request( BASE_URL + '/standardvariables' + username, each["hasPresentation"]["hasStandardVariable"], "POST", configuration.access_token, {'user': username})
                 if response.status_code == 201 or response.status_code == 200:
                     print(response.json())
                     response_data = response.json()
@@ -815,7 +771,7 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
                     print(response.status_code)
                     exit(1)
             
-            response = make_request( BASE_URL + '/variablepresentations' + username, each["hasPresentation"], "POST", configuration.access_token, {'user': 'dhruvrpa@usc.edu'})
+            response = make_request( BASE_URL + '/variablepresentations' + username, each["hasPresentation"], "POST", configuration.access_token, {'user': username})
             if response.status_code == 201 or response.status_code == 200:
                 print(response.json())
                 response_data = response.json()
@@ -863,7 +819,7 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
             parameter.uses_unit = []
         """
 
-        response = make_request( BASE_URL + '/parameters' + username, parameter, "POST", configuration.access_token, {'user': 'dhruvrpa@usc.edu'})
+        response = make_request( BASE_URL + '/parameters' + username, parameter, "POST", configuration.access_token, {'user': username})
         if response.status_code == 201 or response.status_code == 200:
             print("Created a parameter " + parameter["id"])
             print(response.json())
@@ -875,65 +831,6 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
             print(response.status_code)
             exit(1)
 
-
-    # Registering the SourceCode through the SourceCodeAPI
-    source_code_uri = []
-    iter=0
-    for each in metadata["hasSourceCode"]:
-        source_code = {}
-
-        if "codeRepository" in each:
-            source_code["codeRepository"] = each["codeRepository"]
-
-        if "description" in each:
-            source_code["description"] = each["description"]
-
-        if "id" in each:
-            source_code["id"] = each["id"]
-
-        if "label" in each:
-            source_code["label"]=each["label"]
-
-        if "programmingLanguage" in each:
-            source_code["programmingLanguage"]=each["programmingLanguage"]
-
-        if "type" in each:
-            source_code["type"] = each["type"]
-        print (source_code)
-        if "id" not in source_code:
-            response = make_request( BASE_URL + '/sourcecodes', source_code, "POST", configuration.access_token, {'user': 'dhruvrpa@usc.edu'})
-            if response.status_code == 201 or response.status_code == 200:
-                print(response.json())
-                response_data = response.json()
-                print("Created a source_code " + response_data["id"])
-                unique_id = PREFIX_UR + response_data["id"]
-                source_code_uri.append({"id": unique_id, "type": response_data["type"]})
-                 # Adding the unique id to the YAML file
-                metadata["hasSourceCode"][iter]["id"] = unique_id
-
-                # Writing the new ID to the YAML file
-                with open(component_dir / "metadata.yaml", "w") as fp:
-                    dump(metadata, fp)
-            else:
-                print("Error creating a source_code " + source_code["id"])
-                print(response.status_code)
-                print(response)
-                exit(1)
-        else:
-            resource_id = source_code["id"].split("/")
-            response = make_request( BASE_URL + '/sourcecodes/' + resource_id[-1], source_code, "PUT", configuration.access_token, {'user': 'dhruvrpa@usc.edu'})
-            if response.status_code == 201 or response.status_code == 200:
-                print(response.json())
-                response_data = response.json()
-                unique_id = PREFIX_URI + response_data["id"]
-                tp = response_data["type"]
-                source_code_uri.append({"id": unique_id, "type": response_data["type"]})
-            else:
-                print("Error creating an source_code " + dataset_specification["id"])
-                print(response.status_code)
-                exit(1)
-        iter+=1
-
     # Create a model configuration
     model_configuration = {}
     if "name" in model_data:
@@ -942,7 +839,12 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
     model_configuration['hasInput'] = input_param_uri
     model_configuration['hasOutput'] = output_param_uri
     model_configuration['hasParameter'] = parameter_uri
-    model_configuration['hasSourceCode'] = source_code_uri
+
+    if "hasSourceCode" in metadata:
+        model_configuration["hasSourceCode"] = _has_source_code.has_source_code_handler(metadata, configuration.access_token, BASE_URL, component_dir, PREFIX_URI, username)
+
+    if "hasRegion" in metadata:
+        model_configuration["hasRegion"] = _has_region.has_region_handler(metadata, configuration.access_token, BASE_URL, component_dir, PREFIX_URI, username)
 
     if "contributor" in model_data:
         model_configuration["hasContributors"] = model_data["contributors"]
@@ -956,7 +858,7 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
     model_configuration["hasVersion"] = [{'id':model_data['name'] + '_' + model_data['version']}]
 
     if "id" not in metadata:
-        response = make_request( BASE_URL + '/modelconfigurations', model_configuration, "POST", configuration.access_token, {'user': 'dhruvrpa@usc.edu'})
+        response = make_request( BASE_URL + '/modelconfigurations', model_configuration, "POST", configuration.access_token, {'user': username})
         if response.status_code == 201 or response.status_code == 200:
             print("Created a Model Configuration " + response.json()["id"])
             print(response.json())
@@ -976,19 +878,11 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
     else:
         resource_id = metadata["id"]
         resource_id = resource_id.split("/")
-        response = make_request( BASE_URL + '/modelconfigurations/'+ resource_id[-1], model_configuration, "PUT", configuration.access_token, {'user': 'dhruvrpa@usc.edu'})
+        response = make_request( BASE_URL + '/modelconfigurations/'+ resource_id[-1], model_configuration, "PUT", configuration.access_token, {'user': username})
         if response.status_code == 201 or response.status_code == 200:
             print("Created a Model Configuration " + response.json()["id"])
             print(response.json())
             response_data = response.json()
-            unique_id = PREFIX_URI + response_data["id"]
-            
-            # Adding the unique id to the YAML file
-            metadata["id"] = unique_id
-
-            # Writing the new ID to the YAML file
-            with open(component_dir / "metadata.yaml", "w") as fp:
-                dump(metadata, fp)
         else:
             print("Error creating Model Configuration")
             print(response.status_code)

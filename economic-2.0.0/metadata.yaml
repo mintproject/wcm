@@ -89,13 +89,13 @@ hasInput:
     hasShortName:
     - c1
     hasStandardVariable:
-    - id: https://w3id.org/okn/i/mint/b6cba1e6-0b7e-43a8-bea8-d1f791273052
+    - id: https://w3id.org/okn/i/mint/404586f7-a50a-4ab8-96cf-8bdf704e2806
       label:
       - land_crop__production_cost-per-area
       type:
       - http://www.geoscienceontology.org/svo/svu#Variable
       - http://www.w3.org/2002/07/owl#NamedIndividual
-    id: https://w3id.org/okn/i/mint/6331f6b5-9da8-4e38-aeae-da4bc02015da
+    id: https://w3id.org/okn/i/mint/cfcf2612-aa29-481e-8337-7695cfc69043
     label:
     - c1
     type:
@@ -105,7 +105,7 @@ hasInput:
       label:
       - USD ha-1
       type: http://qudt.org/1.1/schema/qudt#Unit
-  id: https://w3id.org/okn/i/mint/41885934-5187-4f86-bbf2-32bc3da6302b
+  id: https://w3id.org/okn/i/mint/5913a76d-c738-4c3a-b98d-e1e13a80291b
   label:
   - economic-sim
   position:
@@ -228,7 +228,7 @@ hasProcess:
 hasRegion:
 - description:
   - Area of the Pongo Basin in South Sudan
-  id: https://w3id.org/okn/i/mint/Pongo_Basin_SS
+  id: https://w3id.org/okn/i/mint/dd958b69-7cdf-4e92-9483-6f58eeb573ef
   label:
   - Pongo basin region (South Sudan)
   type:
@@ -245,7 +245,7 @@ hasSourceCode:
   description:
   - Code for creating an encapsulation of EACS for a model configuration (version
     2)
-  id: https://w3id.org/okn/i/mint/source_econ_config_v2
+  id: https://w3id.org/okn/i/mint/1b1b6fe8-b9b8-4c07-af0c-f2a1b02748a1
   label:
   - EACS configuration component (version 2 of code)
   programmingLanguage:
