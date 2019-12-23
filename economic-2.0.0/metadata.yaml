@@ -89,7 +89,7 @@ hasInput:
     hasShortName:
     - c1
     hasStandardVariable:
-    - id: https://w3id.org/okn/i/mint/404586f7-a50a-4ab8-96cf-8bdf704e2806
+    - id: https://w3id.org/okn/i/mint/7f385bbe-e1aa-4fd5-846f-05b337f4f4f2
       label:
       - land_crop__production_cost-per-area
       type:

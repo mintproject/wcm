@@ -20,7 +20,7 @@ from pprint import pprint
 import json
 import ast
 
-from wcm import _schema, _utils, _metadata_schema, _has_region, _has_source_code
+from wcm import _schema, _utils, _metadata_schema, _has_region, _has_source_code , _person,_equation,_sample_execution,_time_interval
 import requests
 
 try:
@@ -849,11 +849,117 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
     if "contributor" in model_data:
         model_configuration["hasContributors"] = model_data["contributors"]
     
-    if "author" in model_data:
-        model_configuration["author"] = model_data["author"]
-    
+    if "author" in metadata:
+        model_configuration["author"] = _person.person_handler(metadata, configuration.access_token, BASE_URL, component_dir, PREFIX_URI, username, "author")
+
+    if "hasContactPerson" in metadata:
+        model_configuration["hasContactPerson"] = _person.person_handler(metadata, configuration.access_token, BASE_URL, component_dir, PREFIX_URI, username, "hasContactPerson")
+
+    if "hasEquation" in metadata:
+        model_configuration["hasEquation"] = _equation.equation_handler(metadata, configuration.access_token, BASE_URL, component_dir, PREFIX_URI, username)
+
+    if "hasOutputTimeInterval" in metadata:
+        model_configuration["hasOutputTimeInterval"] = _time_interval.time_interval_handler(metadata, configuration.access_token, BASE_URL, component_dir, PREFIX_URI, username, "hasOutputTimeInterval")
+
+    if "hasSampleExecution" in metadata:
+        model_configuration["hasSampleExecution"] = _sample_execution.has_sample_execution_handler(metadata, configuration.access_token, BASE_URL, component_dir, PREFIX_URI, username)
+
     if "licence" in model_data:
         model_configuration["licence"] = model_data["licence"]
+
+    if "citation" in metadata:
+        model_configuration["citation"]= metadata["citation"]
+
+    if "dateCreated" in metadata:
+        model_configuration["dateCreated"]= metadata["dateCreated"]
+
+    if "datePublished" in metadata:
+        model_configuration["datePublished"]= metadata["datePublished"]
+
+    if "description" in metadata:
+        model_configuration["description"]= metadata["description"]
+
+    if "hasAssumption" in metadata:
+        model_configuration["hasAssumption"]= metadata["hasAssumption"]
+
+    if "hasComponentLocation" in metadata:
+        model_configuration["hasComponentLocation"]= metadata["hasComponentLocation"]
+
+    if "hasConstraint" in metadata:
+        model_configuration["hasConstraint"]= metadata["hasConstraint"]
+
+    if "hasDocumentation" in metadata:
+        model_configuration["hasDocumentation"]= metadata["hasDocumentation"]
+
+    if "hasDownloadURL" in metadata:
+        model_configuration["hasDownloadURL"]= metadata["hasDownloadURL"]
+
+    if "hasExample" in metadata:
+        model_configuration["hasExample"]= metadata["hasExample"]
+
+    if "hasExecutionCommand" in metadata:
+        model_configuration["hasExecutionCommand"]= metadata["hasExecutionCommand"]
+
+    if "hasFAQ" in metadata:
+        model_configuration["hasFAQ"]= metadata["hasFAQ"]
+
+    if "hasImplementationScriptLocation" in metadata:
+        model_configuration["hasImplementationScriptLocation"]= metadata["hasImplementationScriptLocation"]
+
+    if "hasInstallationInstructions" in metadata:
+        model_configuration["hasInstallationInstructions"]= metadata["hasInstallationInstructions"]
+
+    if "hasModelCategory" in metadata:
+        model_configuration["hasModelCategory"]= metadata["hasModelCategory"]
+
+    if "hasModelResultTable" in metadata:
+        model_configuration["hasModelResultTable"]= metadata["hasModelResultTable"]
+
+    if "hasPurpose" in metadata:
+        model_configuration["hasPurpose"]= metadata["hasPurpose"]
+
+    if "hasSupportScriptLocation" in metadata:
+        model_configuration["hasSupportScriptLocation"]= metadata["hasSupportScriptLocation"]
+
+    if "hasTypicalDataSource" in metadata:
+        model_configuration["hasTypicalDataSource"]= metadata["hasTypicalDataSource"]
+
+    if "hasUsageNotes" in metadata:
+        model_configuration["hasUsageNotes"]= metadata["hasUsageNotes"]
+
+    if "identifier" in metadata:
+        model_configuration["identifier"]= metadata["identifier"]
+
+    if "keywords" in metadata:
+        model_configuration["keywords"]= metadata["keywords"]
+
+    if "label" in metadata:
+        model_configuration["label"]= metadata["label"]
+
+    if "memoryRequirements" in metadata:
+        model_configuration["memoryRequirements"]= metadata["memoryRequirements"]
+
+    if "operatingSystems" in metadata:
+        model_configuration["operatingSystems"]= metadata["operatingSystems"]
+
+    if "processorRequirements" in metadata:
+        model_configuration["processorRequirements"]= metadata["processorRequirements"]
+
+    if "referencePublication" in metadata:
+        model_configuration["referencePublication"]= metadata["referencePublication"]
+
+    if "shortDescription" in metadata:
+        model_configuration["shortDescription"]= metadata["shortDescription"]
+
+    if "softwareRequirements" in metadata:
+        model_configuration["softwareRequirements"]= metadata["softwareRequirements"]
+
+    if "type" in metadata:
+        model_configuration["type"]= metadata["type"]
+
+    if "website" in metadata:
+        model_configuration["website"]= metadata["website"]
+
     
     model_configuration["hasVersion"] = [{'id':model_data['name'] + '_' + model_data['version']}]
 
