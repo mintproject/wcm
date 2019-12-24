@@ -89,8 +89,7 @@ hasInput:
     hasShortName:
     - c1
     hasStandardVariable:
-    - id: https://w3id.org/okn/i/mint/7f385bbe-e1aa-4fd5-846f-05b337f4f4f2
-      label:
+    - label:
       - land_crop__production_cost-per-area
       type:
       - http://www.geoscienceontology.org/svo/svu#Variable
@@ -205,24 +204,41 @@ hasOutputTimeInterval:
   type:
   - TimeInterval
 hasProcess:
-- id: https://w3id.org/okn/i/mint/crop_yield_elasticity_process
-  type:
-  - Process
-- id: https://w3id.org/okn/i/mint/crop_prices_process
-  type:
-  - Process
-- id: https://w3id.org/okn/i/mint/land_use_process
-  type:
-  - Process
-- id: https://w3id.org/okn/i/mint/crop_supply_process
+- description:
+  - Supply of Crop
+  id: https://w3id.org/okn/i/mint/9b9a363c-b867-491c-9394-75c1dd6bb075
+  influences:
+  - description:
+    - Use of Fertilizer
+    id: https://w3id.org/okn/i/mint/7a3be643-2b47-4e3f-9426-4c4e24a4ef9c
+    influences:
+    - description:
+      - Use of land
+      id: https://w3id.org/okn/i/mint/6489bea5-8dfa-4292-8f9c-a05cc4fac2b9
+      label:
+      - Land use
+      type:
+      - Process
+    - description:
+      - Crop Yield
+      id: https://w3id.org/okn/i/mint/5c0ea131-2f9d-4f56-ac25-7531875485c3
+      label:
+      - Crop yield
+      type:
+      - Process
+    label:
+    - Fertilizer use
+    type:
+    - Process
   label:
   - Crop supply
   type:
   - Process
-- id: https://w3id.org/okn/i/mint/fertilizer_prices_process
-  type:
-  - Process
-- id: https://w3id.org/okn/i/mint/fertilizer_use_process
+- description:
+  - Elasticity of crop yield
+  id: https://w3id.org/okn/i/mint/4bfb7275-4297-4397-9a1c-fdf207938759
+  label:
+  - Crop yield elasticity
   type:
   - Process
 hasRegion:

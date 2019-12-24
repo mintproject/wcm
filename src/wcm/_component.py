@@ -20,7 +20,7 @@ from pprint import pprint
 import json
 import ast
 
-from wcm import _schema, _utils, _metadata_schema, _has_region, _has_source_code , _person,_equation,_sample_execution,_time_interval
+from wcm import _schema, _utils, _metadata_schema, _has_region, _has_source_code , _person,_equation, _sample_execution, _time_interval, _has_process
 import requests
 
 try:
@@ -839,6 +839,9 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
     model_configuration['hasInput'] = input_param_uri
     model_configuration['hasOutput'] = output_param_uri
     model_configuration['hasParameter'] = parameter_uri
+
+    if "hasProcess" in metadata:
+        model_configuration["hasProcess"] = _has_process.has_process_handler(metadata, configuration.access_token, BASE_URL, component_dir, PREFIX_URI, username)
 
     if "hasSourceCode" in metadata:
         model_configuration["hasSourceCode"] = _has_source_code.has_source_code_handler(metadata, configuration.access_token, BASE_URL, component_dir, PREFIX_URI, username)
