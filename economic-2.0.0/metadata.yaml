@@ -66,7 +66,7 @@ hasGrid:
   - Point
   hasSpatialResolution:
   - Point
-  id: https://w3id.org/okn/i/mint/econ_grid
+  id: https://w3id.org/okn/i/mint/94445e25-4415-4852-b59d-aaebffa9e939
   label:
   - Grid from the economic crop supply model
   type:
@@ -89,22 +89,29 @@ hasInput:
     hasShortName:
     - c1
     hasStandardVariable:
-    - label:
+    - id: https://w3id.org/okn/i/mint/1b466c45-7192-4a82-8397-befa4fc44c1c
+      label:
       - land_crop__production_cost-per-area
       type:
       - http://www.geoscienceontology.org/svo/svu#Variable
       - http://www.w3.org/2002/07/owl#NamedIndividual
-    id: https://w3id.org/okn/i/mint/cfcf2612-aa29-481e-8337-7695cfc69043
+    - id: https://w3id.org/okn/i/mint/bdb0782a-bc61-489d-8bf9-410133a80472
+      label:
+      - production_cost-per-area
+      type:
+      - http://www.geoscienceontology.org/svo/svu#Variable
+      - http://www.w3.org/2002/07/owl#NamedIndividual
+    id: https://w3id.org/okn/i/mint/796f96b1-a371-4711-92b8-02424de91165
     label:
     - c1
     type:
     - VariablePresentation
     usesUnit:
-    - id: https://w3id.org/okn/i/mint/USD_ha_1L_2
+    - id: http://qudt.org/1.1/schema/qudt#Unit
       label:
       - USD ha-1
       type: http://qudt.org/1.1/schema/qudt#Unit
-  id: https://w3id.org/okn/i/mint/5913a76d-c738-4c3a-b98d-e1e13a80291b
+  id: https://w3id.org/okn/i/mint/0f034961-d1ff-4ef8-9d22-238c2379d156
   label:
   - economic-sim
   position:
@@ -118,7 +125,7 @@ hasInput:
   - 0
   hasFormat:
   - txt
-  id: https://w3id.org/okn/i/mint/f4815fd5-3eef-4e51-80be-5db2ae50cfd1
+  id: https://w3id.org/okn/i/mint/4f8937a6-a413-4e20-9109-8220a734cb25
   label:
   - economic-subsidies
   position:
