@@ -49,7 +49,7 @@ def write_properties(prop):
     dict = {}
 
     for i in prop:
-        # print(i + ": " + str(type((prop[i])["type"])))
+        # logging.info(i + ": " + str(type((prop[i])["type"])))
         curr = prop[i]
 
         try:

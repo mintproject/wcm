@@ -1,0 +1,29 @@
+- author:
+  - https://w3id.org/okn/i/mint/mayani_rajiv
+  hasComponentLocation:
+  - https://github.com/mintproject/MINT-WorkflowDomain/raw/master/WINGSWorkflowComponents/economic-v2/economic-v2.zip
+  hasGrid:
+  - https://w3id.org/okn/i/mint/94445e25-4415-4852-b59d-aaebffa9e939
+  hasImplementationScriptLocation:
+  - https://github.com/mintproject/MINT-WorkflowDomain/raw/master/WINGSWorkflowComponents/economic-v2/run
+  hasInput:
+  - hasPresentation:
+    - https://w3id.org/okn/i/mint/796f96b1-a371-4711-92b8-02424de91165
+    id: https://w3id.org/okn/i/mint/0f034961-d1ff-4ef8-9d22-238c2379d156
+  hasOutputTimeInterval:
+  - https://w3id.org/okn/i/mint/economic_aggregate_crop_supply_TI
+  hasProcess:
+  - id: https://w3id.org/okn/i/mint/4bfb7275-4297-4397-9a1c-fdf207938759
+    influences:
+    - https://w3id.org/okn/i/mint/4bfb7275-4297-4397-9a1c-fdf207938759
+  - id: https://w3id.org/okn/i/mint/9b9a363c-b867-491c-9394-75c1dd6bb075
+    influences:
+    - https://w3id.org/okn/i/mint/7a3be643-2b47-4e3f-9426-4c4e24a4ef9c
+  hasRegion:
+  - https://w3id.org/okn/i/mint/dd958b69-7cdf-4e92-9483-6f58eeb573ef
+  hasSourceCode:
+  - https://w3id.org/okn/i/mint/1b1b6fe8-b9b8-4c07-af0c-f2a1b02748a1
+  hasVersion:
+  - https://w3id.org/okn/i/mint/economic_2.0.0
+  id: https://w3id.org/okn/i/mint/economic-v2
+  run_id: "<SOME_UNIQUE_RUN_ID>"

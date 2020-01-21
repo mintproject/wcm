@@ -12,6 +12,7 @@ install_requires = [
     "semver>=2.8.1",
     "wings",
     "requests",
+    "modelcatalog-api"
 ]
 
 

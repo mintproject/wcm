@@ -3,6 +3,7 @@
 import logging
 
 from jsonschema import Draft7Validator
+import yaml
 
 
 schemaVersion = "0.0.1"
@@ -143,6 +144,14 @@ def check_package_spec(spec):
     for e in v.iter_errors(spec):
         err.append(_msg(e))
         logging.error(_msg(e))
-
+    
     if err:
         raise ValueError("Invalid component specification.")
+    logging.info("Wings Component YAML is validated successfully.")
+
+def validate_file(path):
+    with open(path, "r") as stream:
+        data_loaded = yaml.safe_load(stream)
+    
+    check_package_spec(data_loaded)
+
