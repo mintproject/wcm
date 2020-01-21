@@ -5,10 +5,10 @@ def has_sample_execution_handler(metadata, access_token, BASE_URL, component_dir
     sample_execution = []
     for sample_execution_index, each in enumerate(metadata["hasSampleExecution"]):
         if "id" not in each:
-            print("Sample Execution POST")
+            logging.info("Sample Execution POST")
             response = _component.make_request( BASE_URL + '/sampleexecutions', each, "POST", access_token, {'user': username})
             if response.status_code == 201 or response.status_code == 200:
-                print(response.json())
+                logging.info(response.json())
                 response_data = response.json()
                 unique_id = PREFIX_URI + response_data["id"]
 
@@ -25,15 +25,15 @@ def has_sample_execution_handler(metadata, access_token, BASE_URL, component_dir
                 else:
                     sample_execution.append({"id": unique_id})
             else:
-                print("Error creating a Sample Execution for index " + sample_execution_index)
-                print(response.status_code)
+                logging.info("Error creating a Sample Execution for index " + sample_execution_index)
+                logging.info(response.status_code)
                 exit(1)
         else:
-            print("Sample Executions PUT")
+            logging.info("Sample Executions PUT")
             resource_id = each["id"].split("/")
             response = _component.make_request( BASE_URL + '/sampleexecutions/' + resource_id[-1], each, "PUT", access_token, {'user': username})
             if response.status_code == 201 or response.status_code == 200:
-                print(response.json())
+                logging.info(response.json())
                 response_data = response.json()
                 unique_id = response_data["id"]
                 if "type" in response_data:
@@ -42,8 +42,8 @@ def has_sample_execution_handler(metadata, access_token, BASE_URL, component_dir
                 else:
                     sample_execution.append({"id": unique_id})
             else:
-                print("Error creating a Sample Executions " + each["id"])
-                print(response.status_code)
+                logging.info("Error creating a Sample Executions " + each["id"])
+                logging.info(response.status_code)
                 exit(1)
     return sample_execution
 

@@ -147,7 +147,7 @@ def check_package_spec(spec):
     
     if err:
         raise ValueError("Invalid component specification.")
-    print("Wings Component YAML is validated successfully.")
+    logging.info("Wings Component YAML is validated successfully.")
 
 def validate_file(path):
     with open(path, "r") as stream:

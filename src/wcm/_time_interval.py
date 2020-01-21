@@ -5,10 +5,10 @@ def time_interval_handler(metadata, access_token, BASE_URL, component_dir, PREFI
     time_interval_uri = []
     for time_interval_index, each in enumerate(metadata[field_name]):
         if "id" not in each:
-            print("Time Interval POST")
+            logging.info("Time Interval POST")
             response = _component.make_request( BASE_URL + '/timeintervals', each, "POST", access_token, {'user': username})
             if response.status_code == 201 or response.status_code == 200:
-                print(response.json())
+                logging.info(response.json())
                 response_data = response.json()
                 unique_id = PREFIX_URI + response_data["id"]
 
@@ -25,15 +25,15 @@ def time_interval_handler(metadata, access_token, BASE_URL, component_dir, PREFI
                 else:
                     time_interval_uri.append({"id": unique_id})
             else:
-                print("Error creating a Time Interval for index " + time_interval_index)
-                print(response.status_code)
+                logging.info("Error creating a Time Interval for index " + time_interval_index)
+                logging.info(response.status_code)
                 exit(1)
         else:
-            print("Time Interval PUT")
+            logging.info("Time Interval PUT")
             resource_id = each["id"].split("/")
             response = _component.make_request( BASE_URL + '/timeintervals/' + resource_id[-1], each, "PUT", access_token, {'user': username})
             if response.status_code == 201 or response.status_code == 200:
-                print(response.json())
+                logging.info(response.json())
                 response_data = response.json()
                 unique_id = response_data["id"]
                 if "type" in response_data:
@@ -42,8 +42,8 @@ def time_interval_handler(metadata, access_token, BASE_URL, component_dir, PREFI
                 else:
                     time_interval_uri.append({"id": unique_id})
             else:
-                print("Error creating a Time Intervals " + each["id"])
-                print(response.status_code)
+                logging.info("Error creating a Time Intervals " + each["id"])
+                logging.info(response.status_code)
                 exit(1)
     return time_interval_uri
 

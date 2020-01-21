@@ -780,18 +780,18 @@ def check_package_spec(spec):
     
     if err:
         raise ValueError("Invalid component specification.")
-    print("Metadata YAML is validated successfully.")
+    logging.info("Metadata YAML is validated successfully.")
    
 
 def validate_file(metadata_path, wings_path):
    with open(metadata_path, 'r') as metadata_stream, open(wings_path, 'r') as wings_stream:
       metadata_loaded=yaml.safe_load(metadata_stream)
       wings_loaded=yaml.safe_load(wings_stream)
-      print(wings_loaded['name'].strip() + '-' + wings_loaded['version'].strip())
+      logging.info(wings_loaded['name'].strip() + '-' + wings_loaded['version'].strip())
       if(metadata_loaded['wingsId'].strip() == wings_loaded['name'].strip() + '-' + wings_loaded['version'].strip()):
          check_package_spec(metadata_loaded)
       else:
-         print("Two files are not consistent") 
+         logging.info("Two files are not consistent") 
 
 
 

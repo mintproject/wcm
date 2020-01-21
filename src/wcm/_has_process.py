@@ -27,8 +27,8 @@ def iterate_on_recursive_data(root, access_token, BASE_URL, component_dir, PREFI
 
             # Register the Process with the API
             if "id" not in current_node:
-                print("Process POST")
-                print(current_node)
+                logging.info("Process POST")
+                logging.info(current_node)
                 response = _component.make_request( BASE_URL + '/processs', current_node, "POST", access_token, {'user': username})
                 if response.status_code == 201 or response.status_code == 200:
 
@@ -36,30 +36,30 @@ def iterate_on_recursive_data(root, access_token, BASE_URL, component_dir, PREFI
                     unique_id = PREFIX_URI + response_data["id"]
 
                     response_data["id"] = unique_id
-                    print(response.json())
+                    logging.info(response.json())
                     # Adding the unique id to the JSON data
                     current_node["id"] = unique_id
 
                 else:
-                    print(response.status_code)
+                    logging.info(response.status_code)
                     exit(1) 
             else:
-                print("Process PUT")
+                logging.info("Process PUT")
                 resource_id = current_node["id"].split("/")
                 response = _component.make_request( BASE_URL + '/processs/' + resource_id[-1], current_node, "PUT", access_token, {'user': username})
                 if response.status_code == 201 or response.status_code == 200:
-                    print(response.json())
+                    logging.info(response.json())
                     response_data = response.json()                    
                 else:
-                    print("Error creating a process " + current_node["id"])
-                    print(response.status_code)
+                    logging.info("Error creating a process " + current_node["id"])
+                    logging.info(response.status_code)
                     exit(1)
 
             node_list.append(current_node["id"])
     
     # Append the root node
     if "id" not in root:
-        print("Process POST")
+        logging.info("Process POST")
         response = _component.make_request( BASE_URL + '/processs', root, "POST", access_token, {'user': username})
         if response.status_code == 201 or response.status_code == 200:
             
@@ -67,23 +67,23 @@ def iterate_on_recursive_data(root, access_token, BASE_URL, component_dir, PREFI
             unique_id = PREFIX_URI + response_data["id"]
             
             response_data["id"] = unique_id
-            print(response.json())
+            logging.info(response.json())
             # Adding the unique id to the JSON data
             root["id"] = unique_id
 
         else:
-            print(response.status_code)
+            logging.info(response.status_code)
             exit(1) 
     else:
-        print("Process PUT")
+        logging.info("Process PUT")
         resource_id = root["id"].split("/")
         response = _component.make_request( BASE_URL + '/processs/' + resource_id[-1], root, "PUT", access_token, {'user': username})
         if response.status_code == 201 or response.status_code == 200:
-            print(response.json())
+            logging.info(response.json())
             response_data = response.json()                    
         else:
-            print("Error creating a process " + root["id"])
-            print(response.status_code)
+            logging.info("Error creating a process " + root["id"])
+            logging.info(response.status_code)
             exit(1)
         
     node_list.append(root["id"])

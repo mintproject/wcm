@@ -184,7 +184,7 @@ def make_request(request_uri, data, request_type, access_token, params):
         try:
             response = requests.put(request_uri, params = json.dumps(params), headers = headers, data = json.dumps(data))
         except Exception as err:
-            print(err)
+            logging.info(err)
         return response
 
 def find_and_get_the_data(metadata, label, find_type):
@@ -233,7 +233,7 @@ def check_if_id_exists_in_yaml(raw_data, label):
             else:
                 return (False, matched_idx)
     
-    print("This is not possible")
+    logging.info("This is not possible")
     exit(1)
 
         
@@ -285,7 +285,7 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
         exit(1)
     
     metadata = spec
-    print(metadata)
+    logging.info(metadata)
 
     input_param = []
     output_param = []
@@ -364,7 +364,7 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
             access_token = json.loads(data)["access_token"]
             configuration.access_token = access_token
         except ApiException as e:
-            print("Exception when calling DefaultApi->user_login_get: %s\n" % e)
+            logging.info("Exception when calling DefaultApi->user_login_get: %s\n" % e)
     else:
         log.error("There is some issue while getting the username and password")
         exit(1)
@@ -377,7 +377,7 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
                 if k != "hasDimensionality" and k != "position" and k != "type":
                     each[k] = v
         else:
-            print("No metadata found for " + each["label"][0])
+            logging.info("No metadata found for " + each["label"][0])
             #exit(1)
 
     # Loading the data from metadata yaml to the output param 
@@ -388,7 +388,7 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
                 if k != "hasDimensionality" and k != "position" and k != "type":
                     each[k] = v
         else:
-            print("No metadata found for " + each["label"][0])
+            logging.info("No metadata found for " + each["label"][0])
             #exit(1)
     
     # Create an instance of DatasetSpecificationApi to register the input and output parameters
@@ -397,7 +397,7 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
     for each in input_param:
         logging.info(each)
         main_id_exists, idx_of_id = check_if_id_exists_in_yaml(metadata["hasInput"], each["label"][0])
-        #print(idx_of_id)
+        #logging.info(idx_of_id)
         dataset_specification = {}
 
         if "hasDimensionality" in each:
@@ -424,7 +424,7 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
 
                 presentation_id_exists, p_idx_of_ids = check_if_id_exists_in_yaml(metadata["hasInput"][idx_of_id]["hasPresentation"], each["hasPresentation"][present_index]["label"][0])
                 # Handle the Internal References for hasPresentation like hasStandardVariable and partOfDataset (Doubt regarding how to handle partOfDataset)
-                print(p_idx_of_ids)
+                logging.info(p_idx_of_ids)
                 standard_variable = []
                 if "hasStandardVariable" in each["hasPresentation"][present_index]:
 
@@ -433,10 +433,10 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
                         standard_variable_id_exists, s_idx_of_ids = check_if_id_exists_in_yaml(metadata["hasInput"][idx_of_id]["hasPresentation"][p_idx_of_ids]["hasStandardVariable"], each["hasPresentation"][present_index]["hasStandardVariable"][standard_index]["label"][0])
 
                         if not standard_variable_id_exists:
-                            print("Standard Variable POST")
+                            logging.info("Standard Variable POST")
                             response = make_request( BASE_URL + '/standardvariables', each["hasPresentation"][present_index]["hasStandardVariable"][standard_index], "POST", configuration.access_token, {'user': username})
                             if response.status_code == 201 or response.status_code == 200:
-                                print(response.json())
+                                logging.info(response.json())
                                 response_data = response.json()
 
                                 unique_id = PREFIX_URI + response_data["id"]
@@ -451,30 +451,30 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
 
                                 standard_variable.append(response_data)
                             else:
-                                #print("Error creating standard variables for " + dataset_specification["id"])
-                                print(response.status_code)
+                                #logging.info("Error creating standard variables for " + dataset_specification["id"])
+                                logging.info(response.status_code)
                                 exit(1)
                         else:
-                            print("Standard Variable PUT")
+                            logging.info("Standard Variable PUT")
                             resource_id = metadata["hasInput"][idx_of_id]["hasPresentation"][p_idx_of_ids]["hasStandardVariable"][s_idx_of_ids]["id"]
                             resource_id = resource_id.split("/")
                             response = make_request( BASE_URL + '/standardvariables/' + resource_id[-1], each["hasPresentation"][present_index]["hasStandardVariable"][standard_index], "PUT", configuration.access_token, {'user': username})
                             if response.status_code == 201 or response.status_code == 200:
-                                print(response.json())
+                                logging.info(response.json())
                                 response_data = response.json()
 
                                 standard_variable.append(response_data)
                             else:
-                                #print("Error creating standard variables for " + dataset_specification["id"])
-                                print(response.status_code)
+                                #logging.info("Error creating standard variables for " + dataset_specification["id"])
+                                logging.info(response.status_code)
                                 exit(1)
             
                 if not presentation_id_exists:
-                    print("Variable Presentation POST")
-                    print(each["hasPresentation"][present_index])
+                    logging.info("Variable Presentation POST")
+                    logging.info(each["hasPresentation"][present_index])
                     response = make_request( BASE_URL + '/variablepresentations', each["hasPresentation"][present_index], "POST", configuration.access_token, {'user': username})
                     if response.status_code == 201 or response.status_code == 200:
-                        print(response.json())
+                        logging.info(response.json())
                         response_data = response.json() 
                         unique_id = PREFIX_URI + response_data["id"]
 
@@ -488,34 +488,34 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
                         dataset_specification["hasPresentation"].append(response_data)
                         dataset_specification["hasPresentation"][-1]["hasStandardVariable"] = standard_variable
                     else:
-                        #print("Error creating variable presentation for " + dataset_specification["id"])
-                        print(response.status_code)
+                        #logging.info("Error creating variable presentation for " + dataset_specification["id"])
+                        logging.info(response.status_code)
                         exit(1)
                 else:
-                    print("Variable Presentation PUT")
+                    logging.info("Variable Presentation PUT")
                     resource_id = metadata["hasInput"][idx_of_id]["hasPresentation"][p_idx_of_ids]["id"]
                     resource_id = resource_id.split("/")
                     response = make_request( BASE_URL + '/variablepresentations/' + resource_id[-1], each["hasPresentation"][present_index], "PUT", configuration.access_token,{'user': username})
                     if response.status_code == 201 or response.status_code == 200:
-                        print(response.json())
+                        logging.info(response.json())
                         response_data = response.json()
 
                         dataset_specification["hasPresentation"].append(response_data)
                         dataset_specification["hasPresentation"][-1]["hasStandardVariable"] = standard_variable
                     else:
-                        #print("Error creating variable presentation for " + dataset_specification["id"])
-                        print(response.status_code)
+                        #logging.info("Error creating variable presentation for " + dataset_specification["id"])
+                        logging.info(response.status_code)
                         exit(1)
         
-        #print(dataset_specification)
+        #logging.info(dataset_specification)
         if not main_id_exists:
-            print("Input POST")
-            print(dataset_specification)
+            logging.info("Input POST")
+            logging.info(dataset_specification)
 
-            #print("POST Request performed for " + each)
+            #logging.info("POST Request performed for " + each)
             response = make_request( BASE_URL + '/datasetspecifications', dataset_specification, "POST", configuration.access_token, {'user': username})
             if response.status_code == 201 or response.status_code == 200:
-                print(response.json())
+                logging.info(response.json())
                 response_data = response.json()
                 unique_id = PREFIX_URI + response_data["id"]
                 tp = response_data["type"]
@@ -529,18 +529,18 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
 
                 input_param_uri.append({"id": unique_id, "type": [ WINGS_EXPORT_URI +  tp[0], tp[1]]})
             else:
-                #print("Error creating an input paramater " + dataset_specification["id"])
-                print(response.status_code)
+                #logging.info("Error creating an input paramater " + dataset_specification["id"])
+                logging.info(response.status_code)
                 exit(1)
         else:
-            print("Input PUT")
+            logging.info("Input PUT")
 
-            #print("PUT Request performed for " + each)
+            #logging.info("PUT Request performed for " + each)
             resource_id = metadata["hasInput"][idx_of_id]["id"]
             resource_id = resource_id.split("/")
             response = make_request( BASE_URL + '/datasetspecifications/' + resource_id[-1], dataset_specification, "PUT", configuration.access_token, {'user': username})
             if response.status_code == 201 or response.status_code == 200:
-                print(response.json())
+                logging.info(response.json())
                 response_data = response.json()
                 unique_id = PREFIX_URI + response_data["id"]
                 if "type" in response_data:
@@ -549,17 +549,17 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
                 else:
                     input_param_uri.append({"id": unique_id})
             else:
-                print("Error creating an input paramater " + dataset_specification["id"])
-                print(response.status_code)
+                logging.info("Error creating an input paramater " + dataset_specification["id"])
+                logging.info(response.status_code)
                 exit(1)
 
-    print(input_param_uri, len(input_param_uri))
+    logging.info(input_param_uri, len(input_param_uri))
     # Add output parameter to DatasetSpecification API
     output_param_uri = []
     for each in output_param:
         logging.info(each)
         main_id_exists, idx_of_id = check_if_id_exists_in_yaml(metadata["hasOutput"], each["label"][0])
-        #print(idx_of_id)
+        #logging.info(idx_of_id)
         dataset_specification = {}
 
         if "hasDimensionality" in each:
@@ -586,7 +586,7 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
 
                 presentation_id_exists, p_idx_of_ids = check_if_id_exists_in_yaml(metadata["hasOutput"][idx_of_id]["hasPresentation"], each["hasPresentation"][present_index]["label"][0])
                 # Handle the Internal References for hasPresentation like hasStandardVariable and partOfDataset (Doubt regarding how to handle partOfDataset)
-                print(p_idx_of_ids)
+                logging.info(p_idx_of_ids)
                 standard_variable = []
                 if "hasStandardVariable" in each["hasPresentation"][present_index]:
 
@@ -595,10 +595,10 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
                         standard_variable_id_exists, s_idx_of_ids = check_if_id_exists_in_yaml(metadata["hasOutput"][idx_of_id]["hasPresentation"][p_idx_of_ids]["hasStandardVariable"], each["hasPresentation"][present_index]["hasStandardVariable"][standard_index]["label"][0])
 
                         if not standard_variable_id_exists:
-                            print("Standard Variable POST")
+                            logging.info("Standard Variable POST")
                             response = make_request( BASE_URL + '/standardvariables', each["hasPresentation"][present_index]["hasStandardVariable"][standard_index], "POST", configuration.access_token, {'user': username})
                             if response.status_code == 201 or response.status_code == 200:
-                                print(response.json())
+                                logging.info(response.json())
                                 response_data = response.json()
 
                                 unique_id = PREFIX_URI + response_data["id"]
@@ -613,30 +613,30 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
 
                                 standard_variable.append(response_data)
                             else:
-                                #print("Error creating standard variables for " + dataset_specification["id"])
-                                print(response.status_code)
+                                #logging.info("Error creating standard variables for " + dataset_specification["id"])
+                                logging.info(response.status_code)
                                 exit(1)
                         else:
-                            print("Standard Variable PUT")
+                            logging.info("Standard Variable PUT")
                             resource_id = metadata["hasOutput"][idx_of_id]["hasPresentation"][p_idx_of_ids]["hasStandardVariable"][s_idx_of_ids]["id"]
                             resource_id = resource_id.split("/")
                             response = make_request( BASE_URL + '/standardvariables/' + resource_id[-1], each["hasPresentation"][present_index]["hasStandardVariable"][standard_index], "PUT", configuration.access_token, {'user': username})
                             if response.status_code == 201 or response.status_code == 200:
-                                print(response.json())
+                                logging.info(response.json())
                                 response_data = response.json()
 
                                 standard_variable.append(response_data)
                             else:
-                                #print("Error creating standard variables for " + dataset_specification["id"])
-                                print(response.status_code)
+                                #logging.info("Error creating standard variables for " + dataset_specification["id"])
+                                logging.info(response.status_code)
                                 exit(1)
             
                 if not presentation_id_exists:
-                    print("Variable Presentation POST")
-                    print(each["hasPresentation"][present_index])
+                    logging.info("Variable Presentation POST")
+                    logging.info(each["hasPresentation"][present_index])
                     response = make_request( BASE_URL + '/variablepresentations', each["hasPresentation"][present_index], "POST", configuration.access_token, {'user': username})
                     if response.status_code == 201 or response.status_code == 200:
-                        print(response.json())
+                        logging.info(response.json())
                         response_data = response.json() 
                         unique_id = PREFIX_URI + response_data["id"]
 
@@ -650,34 +650,34 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
                         dataset_specification["hasPresentation"].append(response_data)
                         dataset_specification["hasPresentation"][-1]["hasStandardVariable"] = standard_variable
                     else:
-                        #print("Error creating variable presentation for " + dataset_specification["id"])
-                        print(response.status_code)
+                        #logging.info("Error creating variable presentation for " + dataset_specification["id"])
+                        logging.info(response.status_code)
                         exit(1)
                 else:
-                    print("Variable Presentation PUT")
+                    logging.info("Variable Presentation PUT")
                     resource_id = metadata["hasOutput"][idx_of_id]["hasPresentation"][p_idx_of_ids]["id"]
                     resource_id = resource_id.split("/")
                     response = make_request( BASE_URL + '/variablepresentations/' + resource_id[-1], each["hasPresentation"][present_index], "PUT", configuration.access_token,{'user': username})
                     if response.status_code == 201 or response.status_code == 200:
-                        print(response.json())
+                        logging.info(response.json())
                         response_data = response.json()
 
                         dataset_specification["hasPresentation"].append(response_data)
                         dataset_specification["hasPresentation"][-1]["hasStandardVariable"] = standard_variable
                     else:
-                        #print("Error creating variable presentation for " + dataset_specification["id"])
-                        print(response.status_code)
+                        #logging.info("Error creating variable presentation for " + dataset_specification["id"])
+                        logging.info(response.status_code)
                         exit(1)
         
-        #print(dataset_specification)
+        #logging.info(dataset_specification)
         if not main_id_exists:
-            print("Output POST")
-            print(dataset_specification)
+            logging.info("Output POST")
+            logging.info(dataset_specification)
 
-            #print("POST Request performed for " + each)
+            #logging.info("POST Request performed for " + each)
             response = make_request( BASE_URL + '/datasetspecifications', dataset_specification, "POST", configuration.access_token, {'user': username})
             if response.status_code == 201 or response.status_code == 200:
-                print(response.json())
+                logging.info(response.json())
                 response_data = response.json()
                 unique_id = PREFIX_URI + response_data["id"]
                 tp = response_data["type"]
@@ -691,18 +691,18 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
 
                 output_param_uri.append({"id": unique_id, "type": [ WINGS_EXPORT_URI +  tp[0], tp[1]]})
             else:
-                #print("Error creating an input paramater " + dataset_specification["id"])
-                print(response.status_code)
+                #logging.info("Error creating an input paramater " + dataset_specification["id"])
+                logging.info(response.status_code)
                 exit(1)
         else:
-            print("Output PUT")
+            logging.info("Output PUT")
 
-            #print("PUT Request performed for " + each)
+            #logging.info("PUT Request performed for " + each)
             resource_id = metadata["hasOutput"][idx_of_id]["id"]
             resource_id = resource_id.split("/")
             response = make_request( BASE_URL + '/datasetspecifications/' + resource_id[-1], dataset_specification, "PUT", configuration.access_token, {'user': username})
             if response.status_code == 201 or response.status_code == 200:
-                print(response.json())
+                logging.info(response.json())
                 response_data = response.json()
                 unique_id = PREFIX_URI + response_data["id"]
                 if "type" in response_data:
@@ -711,11 +711,11 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
                 else:
                     output_param_uri.append({"id": unique_id})
             else:
-                print("Error creating an input paramater " + dataset_specification["id"])
-                print(response.status_code)
+                logging.info("Error creating an input paramater " + dataset_specification["id"])
+                logging.info(response.status_code)
                 exit(1)
 
-    print(output_param_uri, len(output_param_uri))
+    logging.info(output_param_uri, len(output_param_uri))
 
     # Registering the Parameters through the ParameterAPI
     parameter_uri = []
@@ -748,23 +748,23 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
             if "hasStandardVariable" in each["hasPresentation"]:
                 response = make_request( BASE_URL + '/standardvariables' + username, each["hasPresentation"]["hasStandardVariable"], "POST", configuration.access_token, {'user': username})
                 if response.status_code == 201 or response.status_code == 200:
-                    print(response.json())
+                    logging.info(response.json())
                     response_data = response.json()
                     standard_variable = response_data
                 else:
-                    print("Error creating standard variables for " + dataset_specification["id"])
-                    print(response.status_code)
+                    logging.info("Error creating standard variables for " + dataset_specification["id"])
+                    logging.info(response.status_code)
                     exit(1)
             
             response = make_request( BASE_URL + '/variablepresentations' + username, each["hasPresentation"], "POST", configuration.access_token, {'user': username})
             if response.status_code == 201 or response.status_code == 200:
-                print(response.json())
+                logging.info(response.json())
                 response_data = response.json()
                 dataset_specification["hasPresentation"] = response_data
                 dataset_specification["hasPresentation"]["hasStandardVariable"] = standard_variable
             else:
-                print("Error creating variable presentation for " + dataset_specification["id"])
-                print(response.status_code)
+                logging.info("Error creating variable presentation for " + dataset_specification["id"])
+                logging.info(response.status_code)
                 exit(1)
         
         """
@@ -806,14 +806,14 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
 
         response = make_request( BASE_URL + '/parameters' + username, parameter, "POST", configuration.access_token, {'user': username})
         if response.status_code == 201 or response.status_code == 200:
-            print("Created a parameter " + parameter["id"])
-            print(response.json())
+            logging.info("Created a parameter " + parameter["id"])
+            logging.info(response.json())
             response_data = response.json()
             unique_id = PREFIX_URI + response_data["id"]
             parameter_uri.append({"id": unique_id, "type": response_data["type"]})
         else:
-            print("Error creating a parameter " + parameter["id"])
-            print(response.status_code)
+            logging.info("Error creating a parameter " + parameter["id"])
+            logging.info(response.status_code)
             exit(1)
 
     # Create a model configuration
@@ -955,11 +955,11 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
     model_configuration["hasVersion"] = [{'id':model_data['name'] + '_' + model_data['version']}]
 
     if "id" not in metadata:
-        print("Model Configuration POST")
+        logging.info("Model Configuration POST")
         response = make_request( BASE_URL + '/modelconfigurations', model_configuration, "POST", configuration.access_token, {'user': username})
         if response.status_code == 201 or response.status_code == 200:
-            print("Created a Model Configuration " + response.json()["id"])
-            print(response.json())
+            logging.info("Created a Model Configuration " + response.json()["id"])
+            logging.info(response.json())
             response_data = response.json()
             unique_id = PREFIX_URI + response_data["id"]
             
@@ -970,21 +970,21 @@ def upload_to_software_catalog(component_dir, profile=None, apiprofile=None, cre
             with open(component_dir / "metadata.yaml", "w") as fp:
                 dump(metadata, fp)
         else:
-            print("Error creating Model Configuration")
-            print(response.status_code)
+            logging.info("Error creating Model Configuration")
+            logging.info(response.status_code)
             exit(1)
     else:
-        print("Model Configuration PUT")
+        logging.info("Model Configuration PUT")
         resource_id = metadata["id"]
         resource_id = resource_id.split("/")
         response = make_request( BASE_URL + '/modelconfigurations/'+ resource_id[-1], model_configuration, "PUT", configuration.access_token, {'user': username})
         if response.status_code == 201 or response.status_code == 200:
-            print("Created a Model Configuration " + response.json()["id"])
-            print(response.json())
+            logging.info("Created a Model Configuration " + response.json()["id"])
+            logging.info(response.json())
             response_data = response.json()
         else:
-            print("Error creating Model Configuration")
-            print(response.status_code)
+            logging.info("Error creating Model Configuration")
+            logging.info(response.status_code)
             exit(1)
 
 

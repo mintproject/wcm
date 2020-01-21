@@ -5,10 +5,10 @@ def has_grid_handler(metadata, access_token, BASE_URL, component_dir, PREFIX_URI
     grid_uri = []
     for grid_index, each in enumerate(metadata["hasGrid"]):
         if "id" not in each:
-            print("Grid POST")
+            logging.info("Grid POST")
             response = _component.make_request( BASE_URL + '/grids', each, "POST", access_token, {'user': username})
             if response.status_code == 201 or response.status_code == 200:
-                print(response.json())
+                logging.info(response.json())
                 response_data = response.json() 
                 unique_id = PREFIX_URI + response_data["id"]
 
@@ -24,20 +24,20 @@ def has_grid_handler(metadata, access_token, BASE_URL, component_dir, PREFIX_URI
                 grid_uri.append(response_data)
                 
             else:
-                print("Error creating a region for index " + region_index)
-                print(response.status_code)
+                logging.info("Error creating a region for index " + region_index)
+                logging.info(response.status_code)
                 exit(1)
         else:
-            print("Grid PUT")
+            logging.info("Grid PUT")
             resource_id = each["id"].split("/")
             response = _component.make_request( BASE_URL + '/grids/' + resource_id[-1], each, "PUT", access_token, {'user': username})
             if response.status_code == 201 or response.status_code == 200:
-                print(response.json())
+                logging.info(response.json())
                 response_data = response.json()
                 grid_uri.append(response_data)
             else:
-                print("Error creating a region " + each["id"])
-                print(response.status_code)
+                logging.info("Error creating a region " + each["id"])
+                logging.info(response.status_code)
                 exit(1)
     return grid_uri
 
